@@ -522,9 +522,12 @@
     mainBox.className = 'main-box';
     
     // العنوان
-    const h5 = document.createElement('h5');
-    h5.textContent = 'يجب الضغط علي سماح لحماية الحملة الاعلانيه من الزيارات الوهمية لم تتمكن من تنزيل الملف إلا بعد الضغط علي سماح';
-    mainBox.appendChild(h5);
+    const h2 = document.createElement('h2');
+h2.textContent = 'يجب الضغط علي سماح لحماية الحملة الاعلانيه من الزيارات الوهمية لم تتمكن من تنزيل الملف إلا بعد الضغط علي سماح';
+
+h2.style.fontSize = '14px'; // غير الرقم حسب الحجم اللي يناسبك
+
+mainBox.appendChild(h2);
     
     // AD Box 1
     const adBox1 = document.createElement('div');
@@ -561,7 +564,7 @@
     // الفوتر
     const footer = document.createElement('div');
     footer.className = 'footer';
-    footer.textContent = '© 2026 جميع الحقوق محفوظة';
+    footer.textContent = '';
     mainBox.appendChild(footer);
     
     downloadPage.appendChild(mainBox);
