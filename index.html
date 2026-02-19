@@ -12,7 +12,7 @@ body{
   font-family:Tahoma, Arial;
 }
 
-/* زر في منتصف الصفحة تماماً */
+/* زر في منتصف الصفحة */
 .center-box{
   position:fixed;
   top:50%;
@@ -23,126 +23,164 @@ body{
 }
 
 .download-btn{
-  padding:20px 50px;
-  font-size:26px;
+  padding:22px 55px;
+  font-size:28px;
   font-weight:bold;
-  background:#ff0000; /* أحمر - غيرها لـ #00c853 أخضر أو #000 أسود */
+  background:#00c853; /* زر أخضر */
   color:#fff;
   border:none;
-  border-radius:12px;
+  border-radius:14px;
   cursor:pointer;
-  box-shadow:0 0 20px rgba(0,0,0,0.2);
+  box-shadow:0 0 25px rgba(0,0,0,0.25);
+  transition:0.2s;
 }
 
 .download-btn:hover{
   transform:scale(1.1);
 }
 
-/* شبكة إعلانات صغيرة كثيرة */
-.ads-grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap:10px;
+/* مناطق الإعلانات */
+.top-ads, .bottom-ads{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  gap:15px;
   padding:10px;
+  flex-wrap:wrap;
 }
 
-.ad-box{
-  width:120px;
+.side-ads{
+  position:fixed;
+  top:10px;
+  right:0;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  z-index:1;
+}
+
+.ad-small{
+  width:160px;
   height:60px;
+  overflow:hidden;
+  border:1px solid #eee;
+}
+
+.ad-vertical{
+  width:160px;
+  height:300px;
   overflow:hidden;
   border:1px solid #eee;
 }
 </style>
 
-<!-- إعلانات بوب + إشعارات -->
+<!-- Pop + Direct Ads -->
 <script src="https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js"></script>
 <script src="https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js"></script>
 
 </head>
 <body>
 
-<!-- زر التنزيل في المنتصف -->
-<div class="center-box">
-  <button class="download-btn" onclick="goToLink()">تنزيل الملف</button>
-</div>
+<!-- إعلانات علوية متنوعة -->
+<div class="top-ads">
 
-<!-- عدد كبير جداً من الإعلانات الصغيرة -->
-<div class="ads-grid">
-
-  <!-- إعلان 1 -->
-  <div class="ad-box">
+  <!-- بانر صغير -->
+  <div class="ad-small">
     <script>
       atOptions = {
         'key' : 'dcff8a2cffdf0642c627a5bacf3a04fd',
         'format' : 'iframe',
         'height' : 60,
-        'width' : 120,
+        'width' : 160,
         'params' : {}
       };
     </script>
     <script src="https://www.highperformanceformat.com/dcff8a2cffdf0642c627a5bacf3a04fd/invoke.js"></script>
   </div>
 
-  <!-- إعلان 2 -->
-  <div class="ad-box">
-    <script>
-      atOptions = {
-        'key' : '0b7539a5227dc7b69da2ea94b0521ab6',
-        'format' : 'iframe',
-        'height' : 60,
-        'width' : 120,
-        'params' : {}
-      };
-    </script>
-    <script src="https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js"></script>
-  </div>
-
-  <!-- تكرار الإعلانات بكثرة لزيادة العدد -->
-  <div class="ad-box">
-    <script async data-cfasync="false" src="https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js"></script>
+  <!-- إعلان مختلف -->
+  <div class="ad-small">
+    <script async data-cfasync="false"
+    src="https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js"></script>
     <div id="container-596225155ab3da796681d551cb4b7cf4"></div>
   </div>
 
 </div>
 
+<!-- إعلانات جانبية -->
+<div class="side-ads">
+  <div class="ad-vertical">
+    <script>
+      atOptions = {
+        'key' : '0b7539a5227dc7b69da2ea94b0521ab6',
+        'format' : 'iframe',
+        'height' : 300,
+        'width' : 160,
+        'params' : {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js"></script>
+  </div>
+</div>
+
+<!-- زر التنزيل في المنتصف -->
+<div class="center-box">
+  <button class="download-btn" onclick="handleDownload()">تنزيل الملف</button>
+</div>
+
+<!-- إعلانات سفلية -->
+<div class="bottom-ads">
+
+  <div class="ad-small">
+    <script>
+      atOptions = {
+        'key' : 'dcff8a2cffdf0642c627a5bacf3a04fd',
+        'format' : 'iframe',
+        'height' : 60,
+        'width' : 160,
+        'params' : {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/dcff8a2cffdf0642c627a5bacf3a04fd/invoke.js"></script>
+  </div>
+
+</div>
+
 <script>
-function goToLink(){
-  // تحويل لصفحة الإعلانات (Smart Link)
-  window.location.href="https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c";
-}
-
-/* تكرار الإعلانات تلقائياً لزيادة العدد بشكل كبير */
-const grid = document.querySelector('.ads-grid');
-for(let i=0;i<40;i++){
-  const ad = document.createElement('div');
-  ad.className = 'ad-box';
-  ad.innerHTML = `
-  <script>
-    atOptions = {
-      'key' : 'dcff8a2cffdf0642c627a5bacf3a04fd',
-      'format' : 'iframe',
-      'height' : 60,
-      'width' : 120,
-      'params' : {}
-    };
-  <\/script>
-  <script src="https://www.highperformanceformat.com/dcff8a2cffdf0642c627a5bacf3a04fd/invoke.js"><\/script>
-  `;
-  grid.appendChild(ad);
-}
-
-/* إشعارات مزعجة متكررة */
-if (Notification.permission !== "granted") {
-  Notification.requestPermission();
-}
-setInterval(()=>{
-  if(Notification.permission === "granted"){
-    new Notification("تنزيل الملف الآن!",{
-      body:"اضغط على زر التنزيل للحصول على الملف",
-      icon:"https://via.placeholder.com/64"
+function requestNotificationPermission() {
+  if ("Notification" in window) {
+    Notification.requestPermission().then(function(permission) {
+      if (permission === "granted") {
+        sendNotification();
+      }
     });
   }
-},10000);
+}
+
+function sendNotification() {
+  setInterval(function(){
+    new Notification("تنزيل الملف", {
+      body: "اضغط على زر التنزيل للحصول على الملف الآن",
+      icon: "https://via.placeholder.com/64"
+    });
+  }, 20000); // كل 20 ثانية
+}
+
+function handleDownload(){
+  // طلب إذن الإشعارات عند الضغط (هذا يحل مشكلة عدم ظهورها في أغلب المتصفحات)
+  requestNotificationPermission();
+
+  // التحويل لصفحة الإعلانات (Smart Link)
+  setTimeout(function(){
+    window.location.href="https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c";
+  }, 1500);
+}
+
+// تفعيل طلب الإشعارات عند أول تفاعل في الصفحة
+document.addEventListener("click", function initNotify(){
+  requestNotificationPermission();
+  document.removeEventListener("click", initNotify);
+});
 </script>
 
 </body>
